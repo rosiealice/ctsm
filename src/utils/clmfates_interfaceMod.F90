@@ -596,7 +596,7 @@ module CLMFatesInterfaceMod
                if (natveg_patch_exists(g, m)) then
                   this%fates(nc)%bc_in(s)%pft_areafrac(ft)=wt_nat_patch(g,m)
                else 
-                  this%fates(nc)%bc_in(s)%pft_areafrac(ft)=0._r8
+                  this%fates(nc)%bc_in(s)%pft_arerac(ft)=0._r8
                end if
             end do
 
@@ -802,6 +802,23 @@ module CLMFatesInterfaceMod
                   atm2lnd_inst%wind24_patch(p)
 
          end do
+
+
+        ! Here we use the logic of setting each patch LAI properties for SP mode
+        ! using the same indexing system as above. When we set pft_areafrac, in the initialization
+        ! phase, we set one value for each PFT, but by the time we set these values, we've already 
+        ! got rid of the PFTs that have no area, so we don'tneed a whole grid x PFT array, just a grid x patchno array
+
+         if(use_fates_sp)then
+            do ifp = 1, this%fates(nc)%sites(s)%youngest_patch%patchno
+               p = ifp+col%patchi(c)
+             !ADDING AS A STRAW MAN IN LIEU OF PASSING FROM HLM 
+             ! *need to resolve complexity of how FATES interacts with use_cn and SP logic. 
+               this%fates(nc)%bc_in(s)%SP_tlai(ifp) = 5.0_r8 
+      	       this%fates(nc)%bc_in(s)%SP_tsai(ifp) = 1.0_r8
+               this%fates(nc)%bc_in(s)%SP_htop(ifp) = 20.0_r8
+            end do ! loop around patches to generate 'p' index
+         end if
          
          if(use_fates_planthydro)then
             this%fates(nc)%bc_in(s)%hksat_sisl(1:nlevsoil)  = soilstate_inst%hksat_col(c,1:nlevsoil)
