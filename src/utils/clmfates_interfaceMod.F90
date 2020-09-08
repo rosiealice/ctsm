@@ -58,6 +58,8 @@ module CLMFatesInterfaceMod
    use clm_varctl        , only : use_fates_logging
    use clm_varctl        , only : use_fates_inventory_init
    use clm_varctl        , only : use_fates_fixed_biogeog
+   use clm_varctl        , only : use_fates_fixed_nocomp
+   use clm_varctl        , only : use_fates_fixed_sp
    use clm_varctl        , only : fates_inventory_ctrl_filename
  
    use clm_varcon        , only : tfrz
@@ -264,6 +266,8 @@ module CLMFatesInterfaceMod
      integer                                        :: pass_is_restart
      integer                                        :: pass_cohort_age_tracking
      integer                                        :: pass_biogeog 
+     integer                                        :: pass_nocomp
+     integer                                        :: pass_sp
 
 
      call t_startf('fates_globals')
@@ -314,6 +318,19 @@ module CLMFatesInterfaceMod
         else
            pass_biogeog = 0
         end if
+
+        if(use_fates_fixed_nocomp)then
+           pass_nocomp = 1
+        else
+           pass_nocomp = 0
+        end if
+
+	if(use_fates_fixed_sp)then
+           pass_sp = 1
+        else
+           pass_sp = 0
+        endif
+
         call set_fates_ctrlparms('use_fixed_biogeog',ival=pass_biogeog)
 
         if(use_fates_ed_st3) then
