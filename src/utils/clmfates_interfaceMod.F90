@@ -809,16 +809,22 @@ module CLMFatesInterfaceMod
         ! phase, we set one value for each PFT, but by the time we set these values, we've already 
         ! got rid of the PFTs that have no area, so we don'tneed a whole grid x PFT array, just a grid x patchno array
 
-         if(use_fates_sp)then
-            do ifp = 1, this%fates(nc)%sites(s)%youngest_patch%patchno
-               p = ifp+col%patchi(c)
-             !ADDING AS A STRAW MAN IN LIEU OF PASSING FROM HLM 
-             ! *need to resolve complexity of how FATES interacts with use_cn and SP logic. 
-               this%fates(nc)%bc_in(s)%SP_tlai(ifp) = 5.0_r8 
-      	       this%fates(nc)%bc_in(s)%SP_tsai(ifp) = 1.0_r8
-               this%fates(nc)%bc_in(s)%SP_htop(ifp) = 20.0_r8
-            end do ! loop around patches to generate 'p' index
-         end if
+        ! Here we use the same logic as the pft_areafrac initialization to get an array with values for each pft
+        ! in FATES, some of the HLM PFTs may be aggregated, to the number of patches may be different from the 
+        ! number of FATES PFTs. 
+
+           if(use_fates_sp)then
+             do m = natpft_lb,natpft_ub-1
+               ft = m-natpft_lb+1
+               if (natveg_patch_exists(g, m)) then
+!                this%fates(nc)%bc_in(s)%pft_areafrac(ft)=wt_nat_patch(g,m)
+	         this%fates(nc)%bc_in(s)%hlm_sp_tlai(ft) = 5.0_r8
+                 this%fates(nc)%bc_in(s)%hlm_sp_tsai(ft) = 1.0_r8
+	         this%fates(nc)%bc_in(s)%hlm_sp_htop(ft) = 20.0_r8
+               end if ! patch exists
+             end do ! m
+            end if ! SP
+
          
          if(use_fates_planthydro)then
             this%fates(nc)%bc_in(s)%hksat_sisl(1:nlevsoil)  = soilstate_inst%hksat_col(c,1:nlevsoil)
