@@ -27,7 +27,7 @@ module histFileMod
   use FatesInterfaceTypesMod , only : nlevheight
   use EDTypesMod        , only : nfsc
   use FatesLitterMod    , only : ncwd
-  use EDTypesMod        , only : num_elements_fates => num_elements
+  use PRTGenericMod     , only : num_elements_fates  => num_elements
   use FatesInterfaceTypesMod , only : numpft_fates => numpft
   use ncdio_pio 
 
@@ -5280,9 +5280,6 @@ contains
     ! Sets values for if_disphist, if_stop (arguments)
     ! Remove history files unless this is end of run or
     ! history file is not full.
-    !
-    ! !USES:
-    use clm_time_manager, only : is_last_step
     !
     ! !ARGUMENTS:
     integer, intent(in)  :: ntapes              !actual number of history tapes
