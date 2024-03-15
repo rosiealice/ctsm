@@ -984,13 +984,6 @@ sub setup_cmdl_fire_light_res {
      if ( defined($stream_fldfilename_lightng) && $val ne "none" ) {
         $log->fatal_error("-$var option used while also explicitly setting stream_fldfilename_lightng filename which is a contradiction. Use one or the other not both.");
      }
-     if ( &value_is_true($nl_flags->{'use_fates'}) ) {
-         if ( $nl->get_value('fates_spitfire_mode') == 0) {
-             if (! $opts->{'fire_emis'} ) {
-                 $log->fatal_error("cannot have fire_emis and use_fates set if fates does not have spitfire mode")
-             }
-         }
-     }
      if ( ! &value_is_true($nl->get_value('use_cn')) ) {
         if ( &value_is_true($nl_flags->{'use_fates'}) ) {
            if ( $nl->get_value('fates_spitfire_mode') < 2) {
@@ -3925,7 +3918,10 @@ sub setup_logic_fire_emis {
 
   if ($opts->{'fire_emis'} ) {
      if ( &value_is_true( $nl_flags->{'use_fates'} ) ) {
-        $log->warning( "Fire emission factor file will NOT be used when FATES is on.\n" );
+        $log->message( "Fire emission factor file will NOT be used when FATES is on.\n" );
+        if ( $nl->get_value('fates_spitfire_mode') == 0) {
+            $log->fatal_error("cannot have fire_emis and use_fates set if fates does not have spitfire mode on")
+        }
      } else {
         add_default($opts,  $nl_flags->{'inputdata_rootdir'}, $definition, $defaults, $nl, 'fire_emis_factors_file');
      }
