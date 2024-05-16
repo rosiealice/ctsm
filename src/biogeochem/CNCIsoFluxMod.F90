@@ -505,10 +505,11 @@ contains
          do fp = 1,num_soilp
             p = filter_soilp(fp)
             iso_cnveg_cf%crop_harvestc_to_cropprodc_patch(p) = &
-                 iso_cnveg_cf%leafc_to_biofuelc_patch(p) + &
-                 iso_cnveg_cf%livestemc_to_biofuelc_patch(p) + &
                  iso_cnveg_cf%leafc_to_removedresiduec_patch(p) + &
                  iso_cnveg_cf%livestemc_to_removedresiduec_patch(p)
+            iso_cnveg_cf%bioenergy_crop_harvestc_to_CCS_patch(p) = &
+                 iso_cnveg_cf%leafc_to_biofuelc_patch(p) + &
+                 iso_cnveg_cf%livestemc_to_biofuelc_patch(p) 
          end do
 
          if (use_grainproduct) then
