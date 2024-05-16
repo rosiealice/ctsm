@@ -84,6 +84,7 @@ tot_CC_loss_grc
      real(r8), pointer :: cropprod1_loss_grc(:)    ! (g[C or N]/m2/s) decomposition loss from 1-yr crop product pool
      real(r8), pointer :: prod10_loss_grc(:)       ! (g[C or N]/m2/s) decomposition loss from 10-yr wood product pool
      real(r8), pointer :: prod100_loss_grc(:)      ! (g[C or N]/m2/s) decomposition loss from 100-yr wood product pool
+     real(r8), pointer :: prodCCS_loss_grc(:)      ! (g[C or N]/m2/s) decomposition loss from carbon capture and storage pool
      real(r8), pointer :: tot_woodprod_loss_grc(:) ! (g[C or N]/m2/s) decompomposition loss from all wood product pools
      real(r8), pointer :: tot_CC_loss_grc(:)       ! Amount of carbon lost from harvested bioenergy from inefficiencies in the carbon capture process. 
 
@@ -187,6 +188,7 @@ contains
     allocate(this%cropprod1_loss_grc(begg:endg)) ; this%cropprod1_loss_grc(:) = nan
     allocate(this%prod10_loss_grc(begg:endg)) ; this%prod10_loss_grc(:) = nan
     allocate(this%prod100_loss_grc(begg:endg)) ; this%prod100_loss_grc(:) = nan
+    allocate(this%prodCCS_loss_grc(begg:endg)) ; this%prodCCS_loss_grc(:) = nan
     allocate(this%tot_woodprod_loss_grc(begg:endg)) ; this%tot_woodprod_loss_grc(:) = nan
     allocate(this%tot_CC_loss_grc(begg:endg)) ; this%tot_CC_loss_grc(:) = nan
     allocate(this%tot_CC_stored_grc(begg:endg)) ; this% tot_CC_stored_grc(:) = nan
@@ -358,6 +360,14 @@ contains
          avgflag = 'A', &
          long_name = 'loss from 100-yr wood product pool', &
          ptr_gcell = this%prod100_loss_grc, default='inactive')
+
+    this%prodCCS_loss_grc(begg:endg) = spval
+    call hist_addfld1d( &
+         fname = this%species%hist_fname('PRODCCS', suffix='_LOSS'), &
+         units = 'g' // this%species%get_species() // '/m^2/s', &
+         avgflag = 'A', &
+         long_name = '(slow) loss from stored CCS pool', &
+         ptr_gcell = this%prodCCS_loss_grc, default='inactive')
 
     this%tot_woodprod_loss_grc(begg:endg) = spval
     call hist_addfld1d( &
@@ -869,7 +879,9 @@ contains
     ! respectively, using a discrete-time fractional decay algorithm.
     kprod1  = 7.2e-8_r8
     kprod10 = 7.2e-9_r8
-    kprod100 = 7.2e-10_r8
+    kprod100 = 7.2e-10_r8 
+    KprodCCS = 7.2e-12_r8 ! This, like all the other turnover parameters, should be inputs. 
+
    CCS_efficiency = 0.2_r8 ! Make this a model parameter. Indexed by? 
 
     do g = bounds%begg, bounds%endg
@@ -883,6 +895,7 @@ contains
        this%cropprod1_loss_grc(g) = this%cropprod1_grc(g) * kprod1
        this%prod10_loss_grc(g)    = this%prod10_grc(g)    * kprod10
        this%prod100_loss_grc(g)   = this%prod100_grc(g)   * kprod100
+       this%prodCCS_loss_grc(g)   = this% tot_CCS_grc(g)   * Kprod10000
     end do
 
     ! set time steps
@@ -910,6 +923,9 @@ contains
        this%cropprod1_grc(g) = this%cropprod1_grc(g) - this%cropprod1_loss_grc(g)*dt
        this%prod10_grc(g)    = this%prod10_grc(g)    - this%prod10_loss_grc(g)*dt
        this%prod100_grc(g)   = this%prod100_grc(g)   - this%prod100_loss_grc(g)*dt
+
+       ! Very slow decay of CCS pool  
+       this%tot_CCS_grc(g) = this%tot_CCS_grc(g) - this% prodCCS_loss_grc(g)*dt
 
        ! Add captured carbon to the stored pool. 
        this%tot_CCS_grc(g) = this%tot_CCS_grc(g) + this%tot_CCS_stored_grc(g)*dt
@@ -953,7 +969,9 @@ contains
        this%product_loss_grc(g) = &
             this%cropprod1_loss_grc(g) + &
             this%prod10_loss_grc(g) + &
-            this%prod100_loss_grc(g)
+            this%prod100_loss_grc(g) +
+            this%tot_CCS_loss_grc(g) +
+
 
        this%dwt_woodprod_gain_grc(g) = &
             this%dwt_prod100_gain_grc(g) + &
