@@ -3748,9 +3748,9 @@ ptch: do fp = 1,num_soilp
           cnveg_carbonflux_inst%crop_harvestc_to_cropprodc_patch(p) = &
                cnveg_carbonflux_inst%leafc_to_removedresiduec_patch(p) + &
                cnveg_carbonflux_inst%livestemc_to_removedresiduec_patch(p)
-          cnveg_carbonflux_inst%biofuel_crop_harvestc_to_CCS_patch(p) = &
+          cnveg_carbonflux_inst%bioenergy_crop_harvestc_to_CCS_patch(p) = &
                cnveg_carbonflux_inst%leafc_to_biofuelc_patch(p) + &
-               cnveg_carbonflux_inst%livestemc_to_biofuelc_patch(p) + &
+               cnveg_carbonflux_inst%livestemc_to_biofuelc_patch(p) 
 
           cnveg_nitrogenflux_inst%crop_harvestn_to_cropprodn_patch(p) = &
                cnveg_nitrogenflux_inst%leafn_to_removedresiduen_patch(p) + &
@@ -3786,14 +3786,13 @@ ptch: do fp = 1,num_soilp
           end do
        end do
 
-       call p2c (bounds, num_soilc, filter_soilc, &
+       call p2c(bounds, num_soilc, filter_soilc, &
             cnveg_carbonflux_inst%crop_harvestc_to_cropprodc_patch(bounds%begp:bounds%endp), &
             cnveg_carbonflux_inst%crop_harvestc_to_cropprodc_col(bounds%begc:bounds%endc))
 
-       call p2c (bounds, num_soilc, filter_soilc, &
+       call p2c(bounds, num_soilc, filter_soilc, &
             cnveg_carbonflux_inst%bioenergy_crop_harvestc_to_CCS_patch(bounds%begp:bounds%endp), &
             cnveg_carbonflux_inst%bioenergy_crop_harvestc_to_CCS_col(bounds%begc:bounds%endc))
-       
        
        call p2c (bounds, num_soilc, filter_soilc, &
             cnveg_nitrogenflux_inst%crop_harvestn_to_cropprodn_patch(bounds%begp:bounds%endp), &
