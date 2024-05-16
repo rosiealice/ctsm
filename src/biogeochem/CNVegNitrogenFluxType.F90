@@ -69,6 +69,8 @@ module CNVegNitrogenFluxType
      real(r8), pointer :: hrv_retransn_to_litter_patch              (:)     ! patch retranslocated N pool harvest mortality (gN/m2/s)
      real(r8), pointer :: crop_harvestn_to_cropprodn_patch          (:)     ! patch crop harvest N to crop product pool (gN/m2/s)
      real(r8), pointer :: crop_harvestn_to_cropprodn_col            (:)     ! col crop harvest N to crop product pool (gN/m2/s)
+     real(r8), pointer :: bioenergy_crop_harvestn_to_CCS_patch          (:) ! patch bioenergy crop harvest N to CCS process (gN/m2/s) 
+     real(r8), pointer :: bioenergy_crop_harvestn_to_CCS_col          (:)     ! patch bioenergy crop harvest N to CCS process (gN/m2/s)
      real(r8), pointer :: m_n_to_litr_fire_col                      (:,:,:) ! col N from leaf, froot, xfer and storage N to litter N by fire (gN/m3/s)
      real(r8), pointer :: harvest_n_to_litr_n_col                   (:,:,:) ! col N fluxes associated with harvest to litter pools (gN/m3/s)
      real(r8), pointer :: harvest_n_to_cwdn_col                     (:,:)   ! col N fluxes associated with harvest to CWD pool (gN/m3/s)
@@ -504,7 +506,8 @@ contains
 
     allocate(this%crop_harvestn_to_cropprodn_patch                 (begp:endp)) ; this%crop_harvestn_to_cropprodn_patch                 (:) = nan
     allocate(this%crop_harvestn_to_cropprodn_col                   (begc:endc)) ; this%crop_harvestn_to_cropprodn_col                   (:) = nan
-
+    allocate(this%bioenergy_crop_harvestn_to_CCS_patch          (begp:endp)) ; this%bioenergy_crop_harvestn_to_CCS_patch                 (:) = nan
+    allocate(this%bioenergy_crop_harvestn_to_CCS_col          (begp:endp)) ; this%bioenergy_crop_harvestn_to_CCS_col                 (:) = nan
     allocate(this%fire_nloss_col                            (begc:endc)) ; this%fire_nloss_col                            (:) = nan
     allocate(this%fire_nloss_p2c_col                        (begc:endc)) ; this%fire_nloss_p2c_col                        (:) = nan
 
@@ -1959,7 +1962,9 @@ contains
        this%fire_nloss_patch(i)                          = value_patch
 
        this%crop_seedn_to_leaf_patch(i)                  = value_patch
-       this%crop_harvestn_to_cropprodn_patch(i)                 = value_patch
+       this%crop_harvestn_to_cropprodn_patch(i)          = value_patch
+       this%bioenergy_crop_harvestn_to_CCS_patch(i)      = value_patch
+       this%bioenergy_crop_harvestn_to_CCS_col(i)        = value_patch
     end do
 
     if ( use_crop )then
@@ -2027,6 +2032,7 @@ contains
        i = filter_column(fi)
 
        this%crop_harvestn_to_cropprodn_col(i)       = value_column
+       this%bioenergy_crop_harvestn_to_CCS_col(i)       = value_column
        this%fire_nloss_col(i)                = value_column
 
        ! Zero p2c column fluxes
