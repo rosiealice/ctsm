@@ -880,7 +880,8 @@ contains
             gru_wood_product_gain_patch = cnveg_carbonflux_inst%gru_wood_productc_gain_patch(begp:endp), &
             wood_harvest_patch = cnveg_carbonflux_inst%wood_harvestc_patch(begp:endp), &
             dwt_crop_product_gain_patch = cnveg_carbonflux_inst%dwt_crop_productc_gain_patch(begp:endp), &
-            crop_harvest_to_cropprod_patch = cnveg_carbonflux_inst%crop_harvestc_to_cropprodc_patch(begp:endp))
+            crop_harvest_to_cropprod_patch = cnveg_carbonflux_inst%crop_harvestc_to_cropprodc_patch(begp:endp),  &
+            bioenergy_crop_harvest_to_CCS_patch = cnveg_carbonflux_inst%bioenergy_crop_harvest_to_CCS_patch(begp:endp))
  
        if (use_c13) then
           call c13_products_inst%UpdateProducts(bounds, &
@@ -889,7 +890,8 @@ contains
                gru_wood_product_gain_patch = c13_cnveg_carbonflux_inst%gru_wood_productc_gain_patch(begp:endp), &
                wood_harvest_patch = c13_cnveg_carbonflux_inst%wood_harvestc_patch(begp:endp), &
                dwt_crop_product_gain_patch = c13_cnveg_carbonflux_inst%dwt_crop_productc_gain_patch(begp:endp), &
-               crop_harvest_to_cropprod_patch = c13_cnveg_carbonflux_inst%crop_harvestc_to_cropprodc_patch(begp:endp))
+               crop_harvest_to_cropprod_patch = c13_cnveg_carbonflux_inst%crop_harvestc_to_cropprodc_patch(begp:endp), &
+               bioenergy_crop_harvest_to_CCS_patch = c13_cnveg_carbonflux_inst%bioenergy_crop_harvest_to_CCS_patch(begp:endp))
        end if
     
        if (use_c14) then
@@ -899,7 +901,8 @@ contains
                gru_wood_product_gain_patch = c14_cnveg_carbonflux_inst%gru_wood_productc_gain_patch(begp:endp), &
                wood_harvest_patch = c14_cnveg_carbonflux_inst%wood_harvestc_patch(begp:endp), &
                dwt_crop_product_gain_patch = c14_cnveg_carbonflux_inst%dwt_crop_productc_gain_patch(begp:endp), &
-               crop_harvest_to_cropprod_patch = c14_cnveg_carbonflux_inst%crop_harvestc_to_cropprodc_patch(begp:endp))
+               crop_harvest_to_cropprod_patch = c14_cnveg_carbonflux_inst%crop_harvestc_to_cropprodc_patch(begp:endp), &
+               bioenergy_crop_harvest_to_CCS_patch = c14_cnveg_carbonflux_inst%bioenergy_crop_harvest_to_CCS_patch(begp:endp))
        end if
 
        call n_products_inst%UpdateProducts(bounds, &
@@ -908,7 +911,8 @@ contains
             gru_wood_product_gain_patch = cnveg_nitrogenflux_inst%gru_wood_productn_gain_patch(begp:endp), &
             wood_harvest_patch = cnveg_nitrogenflux_inst%wood_harvestn_patch(begp:endp), &
             dwt_crop_product_gain_patch = cnveg_nitrogenflux_inst%dwt_crop_productn_gain_patch(begp:endp), &
-            crop_harvest_to_cropprod_patch = cnveg_nitrogenflux_inst%crop_harvestn_to_cropprodn_patch(begp:endp))
+            crop_harvest_to_cropprod_patch = cnveg_nitrogenflux_inst%crop_harvestn_to_cropprodn_patch(begp:endp), &
+            bioenergy_crop_harvest_to_ccs_patch = cnveg_nitrogenflux_inst%bioenergy_crop_harvestn_to_ccs_patch(begp:endp))
        
     end if if_bgc_vegp2
  

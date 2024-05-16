@@ -593,7 +593,8 @@ contains
        gru_wood_product_gain_patch, &
        wood_harvest_patch, &
        dwt_crop_product_gain_patch, &
-       crop_harvest_to_cropprod_patch)
+       crop_harvest_to_cropprod_patch,&
+       bioenergy_crop_harvest_to_CCS_patch)
     !
     ! !DESCRIPTION:
     ! Update all loss fluxes from wood and crop product pools, and update product pool
@@ -623,7 +624,11 @@ contains
     ! crop harvest to crop product pool (g/m2/s) [patch]
     real(r8), intent(in) :: crop_harvest_to_cropprod_patch( bounds%begp: )
 
+    ! bioenergy crop harvest to CCS  pool (g/m2/s) [patch]
+    real(r8), intent(in) :: crop_harvest_to_CCS_patch( bounds%begp: )
 
+    
+     
     SHR_ASSERT_ALL_FL((ubound(dwt_wood_product_gain_patch) == (/bounds%endp/)), sourcefile, __LINE__)
     SHR_ASSERT_ALL_FL((ubound(gru_wood_product_gain_patch) == (/bounds%endp/)), sourcefile, __LINE__)
     SHR_ASSERT_ALL_FL((ubound(wood_harvest_patch) == (/bounds%endp/)), sourcefile, __LINE__)
