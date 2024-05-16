@@ -77,16 +77,15 @@ module CNProductsMod
      real(r8), pointer :: bioenergy_crop_harvest_to_CCS_patch(:) ! (g[C or N]/m2/s) bioenergy harvest, which all goes directly to CCS process. (To avoid having to model the process of deciding when it should be burned. Might lead to spiky emissions).
 
      real(r8), pointer :: bioenergy_crop_harvest_to_CCS_grc(:) ! (g[C or N]/m2/s) bioenergy harvest, which all goes directly to CCS process. (To avoid having to model the process of deciding when it should be burned. Might lead to spiky emissions).
-     real(r8), pointer :: tot_CC_stored_grc(:) ! (g[C or N]/m2/s) bioenergy harvest, which is stored as CCS pools. 
-
-tot_CC_loss_grc
+     real(r8), pointer :: CCS_loss__grc(:) ! (g[C or N]/m2/s) bioenergy harvest losses from inefficiencies in CCS process. 
+     real(r8), pointer :: CCS_stored_grc(:) ! (g[C or N]/m2/s) bioenergy harvest, which is stored as CCS pools.
      ! Fluxes: losses
      real(r8), pointer :: cropprod1_loss_grc(:)    ! (g[C or N]/m2/s) decomposition loss from 1-yr crop product pool
      real(r8), pointer :: prod10_loss_grc(:)       ! (g[C or N]/m2/s) decomposition loss from 10-yr wood product pool
      real(r8), pointer :: prod100_loss_grc(:)      ! (g[C or N]/m2/s) decomposition loss from 100-yr wood product pool
      real(r8), pointer :: prodCCS_loss_grc(:)      ! (g[C or N]/m2/s) decomposition loss from carbon capture and storage pool
      real(r8), pointer :: tot_woodprod_loss_grc(:) ! (g[C or N]/m2/s) decompomposition loss from all wood product pools
-     real(r8), pointer :: tot_CC_loss_grc(:)       ! Amount of carbon lost from harvested bioenergy from inefficiencies in the carbon capture process. 
+
 
    contains
 
@@ -190,9 +189,8 @@ contains
     allocate(this%prod100_loss_grc(begg:endg)) ; this%prod100_loss_grc(:) = nan
     allocate(this%prodCCS_loss_grc(begg:endg)) ; this%prodCCS_loss_grc(:) = nan
     allocate(this%tot_woodprod_loss_grc(begg:endg)) ; this%tot_woodprod_loss_grc(:) = nan
-    allocate(this%tot_CC_loss_grc(begg:endg)) ; this%tot_CC_loss_grc(:) = nan
-    allocate(this%tot_CC_stored_grc(begg:endg)) ; this% tot_CC_stored_grc(:) = nan
-
+    allocate(this%CCS_loss_grc(begg:endg)) ; this%CCS_loss_grc(:) = nan
+    allocate(this%CCS_stored_grc(begg:endg)) ; this%CCS_stored_grc(:) = nan
     allocate(this%product_loss_grc(begg:endg)) ; this%product_loss_grc(:) = nan
 
   end subroutine InitAllocate
@@ -213,11 +211,11 @@ contains
     this%dwt_cropprod1_gain_grc(bounds%begg:bounds%endg) = setval
 
     this%crop_harvest_to_cropprod1_grc(bounds%begg:bounds%endg) = setval
-    this%bioenergy_crop_harvest_to_cropprod1_grc(bounds%begg:bounds%endg) = setval
+    this%bioenergy_crop_harvest_to_CCS_grc(bounds%begg:bounds%endg) = setval
     this%hrv_deadstem_to_prod10_grc(bounds%begg:bounds%endg) = setval
     this%hrv_deadstem_to_prod100_grc(bounds%begg:bounds%endg) = setval
-    this%tot_CC_loss_grc(bounds%begg:bounds%endg) = setval
-    this%tot_CC_stored_grc(bounds%begg:bounds%endg) = setval
+    this%CCS_loss_grc(bounds%begg:bounds%endg) = setval
+    this%CCS_stored_grc(bounds%begg:bounds%endg) = setval
 
     return
   end subroutine SetValues
@@ -377,21 +375,21 @@ contains
          long_name = 'total loss from wood product pools', &
          ptr_gcell = this%tot_woodprod_loss_grc, default=active_if_non_isotope)
 
-    this%tot_CC_loss_grc(begg:endg) = spval
+    this%CCS_loss_grc(begg:endg) = spval
     call hist_addfld1d( &
-         fname = this%species%hist_fname('TOT_CC', suffix='_LOSS'), &
+         fname = this%species%hist_fname('CCS', suffix='_LOSS'), &
          units = 'g' // this%species%get_species() // '/m^2/s', &
          avgflag = 'A', &
          long_name = 'total loss from Carbon Capture process', &
-         ptr_gcell = this% tot_CC_loss_grc, default=active_if_non_isotope)
+         ptr_gcell = this%CCS_loss_grc, default=active_if_non_isotope)
 
-    this%tot_CC_stored_grc(begg:endg) = spval
+    this%CCS_stored_grc(begg:endg) = spval
     call hist_addfld1d( &
-         fname = this%species%hist_fname('TOT_CC', suffix='STORED'), &
+         fname = this%species%hist_fname('CCS', suffix='STORED'), &
          units = 'g' // this%species%get_species() // '/m^2/s', &
          avgflag = 'A', &
          long_name = 'total carbon flux added to Carbon Capture pools', &
-         ptr_gcell = this% tot_CC_loss_grc, default=active_if_non_isotope)
+         ptr_gcell = this%CCS_loss_grc, default=active_if_non_isotope)
 
 
   end subroutine InitHistory
@@ -412,10 +410,10 @@ contains
        this%cropprod1_grc(g) = 0._r8
        this%prod10_grc(g) = 0._r8
        this%prod100_grc(g) = 0._r8
-       this%tot_woodprod_grc(g) = 0._r8       
-	   this%tot_CCS_grc(g) = 0._r8
-	   this%tot_CCS_loss_grc(g) = 0._r8
-	   this%tot_CCS_stored_grc(g) = 0._r8
+       this%tot_woodprod_grc(g) = 0._r8
+       this%tot_CCS_grc(g) = 0._r8
+       this%CCS_loss_grc(g) = 0._r8
+       this%CCS_stored_grc(g) = 0._r8
     end do
 
     ! We don't call the woodproduct fluxes routine if
@@ -886,8 +884,8 @@ contains
 
     do g = bounds%begg, bounds%endg
        ! calculate partitioning of bioenergy harvest into losses and storage 
-       this%tot_CCS_loss_grc(g)     = this%bioenergy_crop_harvest_to_CCS_grc(g) * (1.0_r8-CCS_efficiency)
-       this%tot_CCS_stored_grc(g)   = this%bioenergy_crop_harvest_to_CCS_grc(g) * CCS_efficiency
+       this%CCS_loss_grc(g)     = this%bioenergy_crop_harvest_to_CCS_grc(g) * (1.0_r8-CCS_efficiency)
+       this%CCS_stored_grc(g)   = this%bioenergy_crop_harvest_to_CCS_grc(g) * CCS_efficiency
     end do
 
     do g = bounds%begg, bounds%endg
@@ -928,7 +926,7 @@ contains
        this%tot_CCS_grc(g) = this%tot_CCS_grc(g) - this% prodCCS_loss_grc(g)*dt
 
        ! Add captured carbon to the stored pool. 
-       this%tot_CCS_grc(g) = this%tot_CCS_grc(g) + this%tot_CCS_stored_grc(g)*dt
+       this%tot_CCS_grc(g) = this%tot_CCS_grc(g) + this%CCS_stored_grc(g)*dt
 
     end do
     
@@ -970,7 +968,7 @@ contains
             this%cropprod1_loss_grc(g) + &
             this%prod10_loss_grc(g) + &
             this%prod100_loss_grc(g) +
-            this%tot_CCS_loss_grc(g) +
+            this%CCS_loss_grc(g) 
 
 
        this%dwt_woodprod_gain_grc(g) = &
