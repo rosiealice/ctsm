@@ -77,7 +77,7 @@ module CNProductsMod
      real(r8), pointer :: bioenergy_crop_harvest_to_CCS_patch(:) ! (g[C or N]/m2/s) bioenergy harvest, which all goes directly to CCS process. (To avoid having to model the process of deciding when it should be burned. Might lead to spiky emissions).
 
      real(r8), pointer :: bioenergy_crop_harvest_to_CCS_grc(:) ! (g[C or N]/m2/s) bioenergy harvest, which all goes directly to CCS process. (To avoid having to model the process of deciding when it should be burned. Might lead to spiky emissions).
-     real(r8), pointer :: CCS_loss__grc(:) ! (g[C or N]/m2/s) bioenergy harvest losses from inefficiencies in CCS process. 
+     real(r8), pointer :: CCS_loss_grc(:) ! (g[C or N]/m2/s) bioenergy harvest losses from inefficiencies in CCS process. 
      real(r8), pointer :: CCS_stored_grc(:) ! (g[C or N]/m2/s) bioenergy harvest, which is stored as CCS pools.
      ! Fluxes: losses
      real(r8), pointer :: cropprod1_loss_grc(:)    ! (g[C or N]/m2/s) decomposition loss from 1-yr crop product pool
@@ -871,7 +871,9 @@ contains
     real(r8) :: kprod1   ! decay constant for 1-year product pool
     real(r8) :: kprod10  ! decay constant for 10-year product pool
     real(r8) :: kprod100 ! decay constant for 100-year product pool
-
+    real(r8) :: KprodCCS ! decay constant for CCS pool
+    real(r8) :: CCS_efficiency ! what fraction of the bioenergy harvest is sequestered (the rest escapes to the atmosphere).  In principle this should be indexed by species and be v low fo N. 
+    
     ! calculate losses from product pools
     ! the following (1/s) rate constants result in ~90% loss of initial state over 1, 10 and 100 years,
     ! respectively, using a discrete-time fractional decay algorithm.
@@ -893,7 +895,7 @@ contains
        this%cropprod1_loss_grc(g) = this%cropprod1_grc(g) * kprod1
        this%prod10_loss_grc(g)    = this%prod10_grc(g)    * kprod10
        this%prod100_loss_grc(g)   = this%prod100_grc(g)   * kprod100
-       this%prodCCS_loss_grc(g)   = this% tot_CCS_grc(g)   * Kprod10000
+       this%prodCCS_loss_grc(g)   = this% tot_CCS_grc(g)   * KprodCCS
     end do
 
     ! set time steps
@@ -967,7 +969,7 @@ contains
        this%product_loss_grc(g) = &
             this%cropprod1_loss_grc(g) + &
             this%prod10_loss_grc(g) + &
-            this%prod100_loss_grc(g) +
+            this%prod100_loss_grc(g) + &
             this%CCS_loss_grc(g) 
 
 
