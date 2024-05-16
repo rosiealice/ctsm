@@ -258,7 +258,9 @@ module CNVegCarbonFluxType
      real(r8), pointer :: harvest_c_to_cwdc_col                     (:,:)   ! C fluxes associated with harvest to CWD pool (gC/m3/s)
      real(r8), pointer :: crop_harvestc_to_cropprodc_patch          (:)     ! crop harvest C to crop product pool (gC/m2/s)
      real(r8), pointer :: crop_harvestc_to_cropprodc_col            (:)     ! crop harvest C to crop product pool (gC/m2/s)
-
+     real(r8), pointer ::bioenergy_crop_harvestc_to_CCS_patch      (:)     ! bioenergy crop harvest  C to CCS (gC/m2/s)  
+          real(r8), pointer ::bioenergy_crop_harvestc_to_CCS_col   (:)     ! bioenergy crop harvest  C to CCS (gC/m2/s)
+          
      ! fire fluxes
      real(r8), pointer :: m_decomp_cpools_to_fire_vr_col            (:,:,:) ! vertically-resolved decomposing C fire loss (gC/m3/s)
      real(r8), pointer :: m_decomp_cpools_to_fire_col               (:,:)   ! vertically-integrated (diagnostic) decomposing C fire loss (gC/m2/s)
@@ -768,6 +770,12 @@ contains
     allocate(this%crop_harvestc_to_cropprodc_col(begc:endc))
     this%crop_harvestc_to_cropprodc_col(:) = nan
 
+    allocate(this%bioenergy_crop_harvestc_to_CCS_patch(begc:endc))
+    this%bioenergy_crop_harvestc_to_CCS_patch(:) = nan
+    
+    allocate(this%bioenergy_crop_harvestc_to_CCS_col(begc:endc))
+    this%bioenergy_crop_harvestc_to_CCS_col(:) = nan
+        
     allocate(this%m_decomp_cpools_to_fire_vr_col(begc:endc,1:nlevdecomp_full,1:ndecomp_pools))                
     this%m_decomp_cpools_to_fire_vr_col(:,:,:)= nan
 
@@ -4192,6 +4200,7 @@ contains
 
        this%crop_seedc_to_leaf_patch(i)                  = value_patch
        this%crop_harvestc_to_cropprodc_patch(i)          = value_patch
+       this%bioenergy_crop_harvestc_to_CCS_patch(i)          = value_patch
        !   Matrix
        if(use_matrixcn)then
        end if
@@ -4290,6 +4299,7 @@ contains
        i = filter_column(fi)
 
        this%crop_harvestc_to_cropprodc_col(i)       = value_column
+       this%bioenergy_crop_harvestc_to_CCS_col(i)       = value_column
        this%cwdc_loss_col(i)                 = value_column
        this%litterc_loss_col(i)              = value_column
 
