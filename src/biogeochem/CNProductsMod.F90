@@ -17,6 +17,22 @@ module CNProductsMod
   !
   implicit none
   private
+
+ ! notes on BECCS implementation. To remove. RF
+ ! 
+ ! New pools:
+ ! tot_CCS_grc(:)  ! (g[C or N]/m2) total captured carbon pool
+
+ ! New fluxes 
+ ! bioenergy_crop_harvest_to_CCS_grc
+ ! bioenergy_crop_harvest_to_CCS_patch
+ ! tot_CC_loss_grc 
+ ! tot_CC_stored_grc 
+ ! dwt_bioenergy_to_CCS_grc
+ ! dwt_bioenergy_to_CCS_patch 
+ ! 
+
+
   !
   ! !PUBLIC TYPES:
   type, public :: cn_products_type
@@ -30,7 +46,8 @@ module CNProductsMod
      real(r8), pointer, public :: product_loss_grc(:)   ! (g[C or N]/m2/s) total decomposition loss from ALL product pools
      real(r8), pointer, public :: cropprod1_grc(:)  ! (g[C or N]/m2) crop product pool (grain + biofuel), 1-year lifespan
      real(r8), pointer, public :: tot_woodprod_grc(:)  ! (g[C or N]/m2) total wood product pool
-     real(r8), pointer, public :: tot_CCS_grc(:)  ! (g[C or N]/m2) total wood product pool
+     real(r8), pointer, public :: tot_CCS_grc(:)  ! (g[C or N]/m2) total captured carbon pool
+
      ! ------------------------------------------------------------------------
      ! Private instance variables
      ! ------------------------------------------------------------------------
@@ -57,7 +74,12 @@ module CNProductsMod
      real(r8), pointer,public :: hrv_deadstem_to_prod100_grc(:) ! (g[C or N]/m2/s) dead stem harvest to 100-year wood product pool
      real(r8), pointer :: crop_harvest_to_cropprod1_patch(:) ! (g[C or N]/m2/s) crop harvest to 1-year crop product pool
      real(r8), pointer :: crop_harvest_to_cropprod1_grc(:) ! (g[C or N]/m2/s) crop harvest to 1-year crop product pool
+     real(r8), pointer :: bioenergy_crop_harvest_to_CCS_patch(:) ! (g[C or N]/m2/s) bioenergy harvest, which all goes directly to CCS process. (To avoid having to model the process of deciding when it should be burned. Might lead to spiky emissions).
 
+     real(r8), pointer :: bioenergy_crop_harvest_to_CCS_grc(:) ! (g[C or N]/m2/s) bioenergy harvest, which all goes directly to CCS process. (To avoid having to model the process of deciding when it should be burned. Might lead to spiky emissions).
+     real(r8), pointer :: tot_CC_stored_grc(:) ! (g[C or N]/m2/s) bioenergy harvest, which is stored as CCS pools. 
+
+tot_CC_loss_grc
      ! Fluxes: losses
      real(r8), pointer :: cropprod1_loss_grc(:)    ! (g[C or N]/m2/s) decomposition loss from 1-yr crop product pool
      real(r8), pointer :: prod10_loss_grc(:)       ! (g[C or N]/m2/s) decomposition loss from 10-yr wood product pool
@@ -158,12 +180,17 @@ contains
 
     allocate(this%crop_harvest_to_cropprod1_patch(begp:endp)) ; this%crop_harvest_to_cropprod1_patch(:) = nan
     allocate(this%crop_harvest_to_cropprod1_grc(begg:endg)) ; this%crop_harvest_to_cropprod1_grc(:) = nan
+    allocate(this%bioenergy_crop_harvest_to_CCS_patch(begp:endp)) ; this% bioenergy_crop_harvest_to_CCS_patch(:) = nan
+    allocate(this%bioenergy_crop_harvest_to_CCS_grc(begg:endg)) ; this% bioenergy_crop_harvest_to_CCS_grc(:) = nan
+
 
     allocate(this%cropprod1_loss_grc(begg:endg)) ; this%cropprod1_loss_grc(:) = nan
     allocate(this%prod10_loss_grc(begg:endg)) ; this%prod10_loss_grc(:) = nan
     allocate(this%prod100_loss_grc(begg:endg)) ; this%prod100_loss_grc(:) = nan
     allocate(this%tot_woodprod_loss_grc(begg:endg)) ; this%tot_woodprod_loss_grc(:) = nan
     allocate(this%tot_CC_loss_grc(begg:endg)) ; this%tot_CC_loss_grc(:) = nan
+    allocate(this%tot_CC_stored_grc(begg:endg)) ; this% tot_CC_stored_grc(:) = nan
+
     allocate(this%product_loss_grc(begg:endg)) ; this%product_loss_grc(:) = nan
 
   end subroutine InitAllocate
@@ -184,9 +211,12 @@ contains
     this%dwt_cropprod1_gain_grc(bounds%begg:bounds%endg) = setval
 
     this%crop_harvest_to_cropprod1_grc(bounds%begg:bounds%endg) = setval
+    this%bioenergy_crop_harvest_to_cropprod1_grc(bounds%begg:bounds%endg) = setval
     this%hrv_deadstem_to_prod10_grc(bounds%begg:bounds%endg) = setval
     this%hrv_deadstem_to_prod100_grc(bounds%begg:bounds%endg) = setval
-    
+    this%tot_CC_loss_grc(bounds%begg:bounds%endg) = setval
+    this%tot_CC_stored_grc(bounds%begg:bounds%endg) = setval
+
     return
   end subroutine SetValues
 
@@ -345,6 +375,14 @@ contains
          long_name = 'total loss from Carbon Capture process', &
          ptr_gcell = this% tot_CC_loss_grc, default=active_if_non_isotope)
 
+    this%tot_CC_stored_grc(begg:endg) = spval
+    call hist_addfld1d( &
+         fname = this%species%hist_fname('TOT_CC', suffix='STORED'), &
+         units = 'g' // this%species%get_species() // '/m^2/s', &
+         avgflag = 'A', &
+         long_name = 'total carbon flux added to Carbon Capture pools', &
+         ptr_gcell = this% tot_CC_loss_grc, default=active_if_non_isotope)
+
 
   end subroutine InitHistory
 
@@ -366,7 +404,8 @@ contains
        this%prod100_grc(g) = 0._r8
        this%tot_woodprod_grc(g) = 0._r8       
 	   this%tot_CCS_grc(g) = 0._r8
-
+	   this%tot_CCS_loss_grc(g) = 0._r8
+	   this%tot_CCS_stored_grc(g) = 0._r8
     end do
 
     ! We don't call the woodproduct fluxes routine if
@@ -388,6 +427,7 @@ contains
        this%gru_prod10_gain_patch(p) = 0._r8
        this%gru_prod100_gain_patch(p) = 0._r8
        this%crop_harvest_to_cropprod1_patch(p) = 0._r8
+       this%bioenergy_crop_harvest_to_CCS_patch(p) = 0._r8
     end do
 
   end subroutine InitCold
@@ -789,6 +829,14 @@ contains
          c2l_scale_type = 'unity', &
          l2g_scale_type = 'unity')
 
+    call p2g(bounds, &
+         this%bioenergy_crop_harvest_to_CCS_patch(bounds%begp:bounds%endp), &
+         this%bioenergy_crop_harvest_to_CCS_grc(bounds%begg:bounds%endg), &
+         p2c_scale_type = 'unity', &
+         c2l_scale_type = 'unity', &
+         l2g_scale_type = 'unity')
+
+
     ! Determine gains from dynamic landcover
 
     do p = bounds%begp, bounds%endp
@@ -800,6 +848,7 @@ contains
        this%dwt_cropprod1_gain_grc(g) = this%dwt_cropprod1_gain_grc(g) + &
             dwt_crop_product_gain_patch(p)
     end do
+
 
   end subroutine PartitionCropFluxes
 
@@ -821,6 +870,13 @@ contains
     kprod1  = 7.2e-8_r8
     kprod10 = 7.2e-9_r8
     kprod100 = 7.2e-10_r8
+   CCS_efficiency = 0.2_r8 ! Make this a model parameter. Indexed by? 
+
+    do g = bounds%begg, bounds%endg
+       ! calculate partitioning of bioenergy harvest into losses and storage 
+       this%tot_CCS_loss_grc(g)     = this%bioenergy_crop_harvest_to_CCS_grc(g) * (1.0_r8-CCS_efficiency)
+       this%tot_CCS_stored_grc(g)   = this%bioenergy_crop_harvest_to_CCS_grc(g) * CCS_efficiency
+    end do
 
     do g = bounds%begg, bounds%endg
        ! calculate fluxes out of product pools (1/sec)
@@ -854,6 +910,10 @@ contains
        this%cropprod1_grc(g) = this%cropprod1_grc(g) - this%cropprod1_loss_grc(g)*dt
        this%prod10_grc(g)    = this%prod10_grc(g)    - this%prod10_loss_grc(g)*dt
        this%prod100_grc(g)   = this%prod100_grc(g)   - this%prod100_loss_grc(g)*dt
+
+       ! Add captured carbon to the stored pool. 
+       this%tot_CCS_grc(g) = this%tot_CCS_grc(g) + this%tot_CCS_stored_grc(g)*dt
+
     end do
     
     return
