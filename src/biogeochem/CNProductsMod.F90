@@ -30,7 +30,7 @@ module CNProductsMod
      real(r8), pointer, public :: product_loss_grc(:)   ! (g[C or N]/m2/s) total decomposition loss from ALL product pools
      real(r8), pointer, public :: cropprod1_grc(:)  ! (g[C or N]/m2) crop product pool (grain + biofuel), 1-year lifespan
      real(r8), pointer, public :: tot_woodprod_grc(:)  ! (g[C or N]/m2) total wood product pool
-
+     real(r8), pointer, public :: tot_CCS_grc(:)  ! (g[C or N]/m2) total wood product pool
      ! ------------------------------------------------------------------------
      ! Private instance variables
      ! ------------------------------------------------------------------------
@@ -63,6 +63,7 @@ module CNProductsMod
      real(r8), pointer :: prod10_loss_grc(:)       ! (g[C or N]/m2/s) decomposition loss from 10-yr wood product pool
      real(r8), pointer :: prod100_loss_grc(:)      ! (g[C or N]/m2/s) decomposition loss from 100-yr wood product pool
      real(r8), pointer :: tot_woodprod_loss_grc(:) ! (g[C or N]/m2/s) decompomposition loss from all wood product pools
+     real(r8), pointer :: tot_CC_loss_grc(:)       ! Amount of carbon lost from harvested bioenergy from inefficiencies in the carbon capture process. 
 
    contains
 
@@ -136,6 +137,7 @@ contains
     allocate(this%prod10_grc(begg:endg)) ; this%prod10_grc(:) = nan
     allocate(this%prod100_grc(begg:endg)) ; this%prod100_grc(:) = nan
     allocate(this%tot_woodprod_grc(begg:endg)) ; this%tot_woodprod_grc(:) = nan
+    allocate(this%tot_CCS_grc(begg:endg)) ; this% tot_CCS_grc(:) = nan
 
     allocate(this%dwt_prod10_gain_grc(begg:endg)) ; this%dwt_prod10_gain_grc(:) = nan
     allocate(this%dwt_prod100_gain_grc(begg:endg)) ; this%dwt_prod100_gain_grc(:) = nan
@@ -161,6 +163,7 @@ contains
     allocate(this%prod10_loss_grc(begg:endg)) ; this%prod10_loss_grc(:) = nan
     allocate(this%prod100_loss_grc(begg:endg)) ; this%prod100_loss_grc(:) = nan
     allocate(this%tot_woodprod_loss_grc(begg:endg)) ; this%tot_woodprod_loss_grc(:) = nan
+    allocate(this%tot_CC_loss_grc(begg:endg)) ; this%tot_CC_loss_grc(:) = nan
     allocate(this%product_loss_grc(begg:endg)) ; this%product_loss_grc(:) = nan
 
   end subroutine InitAllocate
@@ -246,6 +249,14 @@ contains
          long_name = 'total wood product ' // this%species%get_species(), &
          ptr_gcell = this%tot_woodprod_grc, default=active_if_non_isotope)
 
+    this%tot_CCS_grc(begg:endg) = spval
+    call hist_addfld1d( &
+         fname = this%species%hist_fname('TOT_CCS'), &
+         units = 'g' // this%species%get_species() // '/m^2', &
+         avgflag = 'A', &
+         long_name = 'total long term carbon capture & storage pool product ' // this%species%get_species(), &
+         ptr_gcell = this% tot_CCS_grc, default=active_if_non_isotope)
+
     this%dwt_prod10_gain_grc(begg:endg) = spval
     call hist_addfld1d( &
          fname = this%species%hist_fname('DWT_PROD10', suffix='_GAIN'), &
@@ -326,6 +337,15 @@ contains
          long_name = 'total loss from wood product pools', &
          ptr_gcell = this%tot_woodprod_loss_grc, default=active_if_non_isotope)
 
+    this%tot_CC_loss_grc(begg:endg) = spval
+    call hist_addfld1d( &
+         fname = this%species%hist_fname('TOT_CC', suffix='_LOSS'), &
+         units = 'g' // this%species%get_species() // '/m^2/s', &
+         avgflag = 'A', &
+         long_name = 'total loss from Carbon Capture process', &
+         ptr_gcell = this% tot_CC_loss_grc, default=active_if_non_isotope)
+
+
   end subroutine InitHistory
 
   !-----------------------------------------------------------------------
@@ -344,7 +364,9 @@ contains
        this%cropprod1_grc(g) = 0._r8
        this%prod10_grc(g) = 0._r8
        this%prod100_grc(g) = 0._r8
-       this%tot_woodprod_grc(g) = 0._r8
+       this%tot_woodprod_grc(g) = 0._r8       
+	   this%tot_CCS_grc(g) = 0._r8
+
     end do
 
     ! We don't call the woodproduct fluxes routine if
