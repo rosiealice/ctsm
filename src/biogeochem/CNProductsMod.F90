@@ -625,7 +625,7 @@ contains
     real(r8), intent(in) :: crop_harvest_to_cropprod_patch( bounds%begp: )
 
     ! bioenergy crop harvest to CCS  pool (g/m2/s) [patch]
-    real(r8), intent(in) :: crop_harvest_to_CCS_patch( bounds%begp: )
+    real(r8), intent(in) :: bioenergy_crop_harvest_to_CCS_patch( bounds%begp: )
 
     
      
