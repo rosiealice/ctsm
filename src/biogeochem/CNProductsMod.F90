@@ -279,6 +279,14 @@ contains
          long_name = 'total wood product ' // this%species%get_species(), &
          ptr_gcell = this%tot_woodprod_grc, default=active_if_non_isotope)
 
+    this%bioenergy_crop_harvest_to_CCS_grc(begg:endg) = spval
+    call hist_addfld1d( &
+         fname = this%species%hist_fname('TOT_BIOENERGY_HARVEST'), &
+         units = 'g' // this%species%get_species() // '/m^2', &
+         avgflag = 'A', &
+         long_name = 'total wood product ' // this%species%get_species(), &
+         ptr_gcell = this%bioenergy_crop_harvest_to_CCS_grc, default=active_if_non_isotope)
+
     this%tot_CCS_grc(begg:endg) = spval
     call hist_addfld1d( &
          fname = this%species%hist_fname('TOT_CCS'), &
@@ -361,7 +369,7 @@ contains
 
     this%prodCCS_loss_grc(begg:endg) = spval
     call hist_addfld1d( &
-         fname = this%species%hist_fname('PRODCCS', suffix='_LOSS'), &
+         fname = this%species%hist_fname('PROD_CCS_', suffix='_LOSS'), &
          units = 'g' // this%species%get_species() // '/m^2/s', &
          avgflag = 'A', &
          long_name = '(slow) loss from stored CCS pool', &
@@ -375,9 +383,10 @@ contains
          long_name = 'total loss from wood product pools', &
          ptr_gcell = this%tot_woodprod_loss_grc, default=active_if_non_isotope)
 
+    
     this%CCS_loss_grc(begg:endg) = spval
     call hist_addfld1d( &
-         fname = this%species%hist_fname('CCS', suffix='_LOSS'), &
+         fname = this%species%hist_fname('CCS_', suffix='_NOT_CAPTURED'), &
          units = 'g' // this%species%get_species() // '/m^2/s', &
          avgflag = 'A', &
          long_name = 'total loss from Carbon Capture process', &
@@ -385,7 +394,7 @@ contains
 
     this%CCS_stored_grc(begg:endg) = spval
     call hist_addfld1d( &
-         fname = this%species%hist_fname('CCS', suffix='STORED'), &
+         fname = this%species%hist_fname('CCS_', suffix='_STORED'), &
          units = 'g' // this%species%get_species() // '/m^2/s', &
          avgflag = 'A', &
          long_name = 'total carbon flux added to Carbon Capture pools', &
