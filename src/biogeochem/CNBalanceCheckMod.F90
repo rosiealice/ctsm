@@ -141,8 +141,10 @@ contains
          c_cropprod1    => c_products_inst%cropprod1_grc    , &  ! Input:  [real(r8) (:)]  (gC/m2) carbon in crop products
          n_cropprod1    => n_products_inst%cropprod1_grc    , &  ! Input:  [real(r8) (:)]  (gC/m2) nitrogen in crop products
          c_tot_woodprod => c_products_inst%tot_woodprod_grc , &  ! Input:  [real(r8) (:)]  (gC/m2) total carbon in wood products
-         n_tot_woodprod => n_products_inst%tot_woodprod_grc   &  ! Input:  [real(r8) (:)]  (gC/m2) total nitrogen in wood products
-         )
+         n_tot_woodprod => n_products_inst%tot_woodprod_grc ,  &  ! Input:  [real(r8) (:)]  (gC/m2) total nitrogen in wood products
+         c_ccs          => c_products_inst%tot_CCS_grc      ,  &        ! Input:  [real(r8) (:)]  (gC/m2). Total C in CCS.
+         n_ccs          => n_products_inst%tot_CCS_grc   )        ! Input:  [real(r8) (:)]  (gC/m2). Total N in CCS. Note that ideally this should be 0. Need to make the efficienciessomehow indexed by chemical spp. (rf) 
+         
 
     begg = bounds%begg; endg = bounds%endg
     
@@ -163,8 +165,9 @@ contains
        begcb(g) = totc(g) + c_tot_woodprod(g) + c_cropprod1(g) + &
                   hrv_xsmrpool_amount_left_to_dribble(g) + &
                   gru_conv_cflux_amount_left_to_dribble(g) + &
-                  dwt_conv_cflux_amount_left_to_dribble(g)
-       begnb(g) = totn(g) + n_tot_woodprod(g) + n_cropprod1(g)
+                  dwt_conv_cflux_amount_left_to_dribble(g)+ &
+                  c_ccs(g) 
+       begnb(g) = totn(g) + n_tot_woodprod(g) + n_cropprod1(g)+ n_ccs(g) 
     end do
 
     end associate
@@ -284,9 +287,11 @@ contains
          som_c_leached           =>    soilbiogeochem_carbonflux_inst%som_c_leached_col , & ! Input:  [real(r8) (:) ]  (gC/m2/s) total SOM C loss from vertical transport 
 
          totcolc                 =>    soilbiogeochem_carbonstate_inst%totc_col          , & ! Input:  [real(r8) (:) ]  (gC/m2) total column carbon, incl veg and cpool
-         fates_litter_flux       =>    soilbiogeochem_carbonflux_inst%fates_litter_flux  &   ! Total carbon litter flux from FATES to CLM [gC/m2/s]
-         )
+         fates_litter_flux       =>    soilbiogeochem_carbonflux_inst%fates_litter_flux , &   ! Total carbon litter flux from FATES to CLM [gC/m2/s]
+         c_ccs                   => c_products_inst%tot_CCS_grc     )        ! Input:  [real(r8) (:)]  (gC/m2). Total C in CCS.                                                                         
 
+
+         
       ! set time steps
       dt = get_step_size_real()
 
@@ -421,7 +426,7 @@ contains
             grc_endcb(g) = totgrcc(g) + tot_woodprod_grc(g) + cropprod1_grc(g) + &
                  hrv_xsmrpool_amount_left_to_dribble(g) + &
                  gru_conv_cflux_amount_left_to_dribble(g) + &
-                 dwt_conv_cflux_amount_left_to_dribble(g)
+                 dwt_conv_cflux_amount_left_to_dribble(g) + c_ccs(g)
             
             ! calculate total gridcell-level inputs
             ! slevis notes:
