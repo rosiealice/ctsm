@@ -165,8 +165,7 @@ contains
        begcb(g) = totc(g) + c_tot_woodprod(g) + c_cropprod1(g) + &
                   hrv_xsmrpool_amount_left_to_dribble(g) + &
                   gru_conv_cflux_amount_left_to_dribble(g) + &
-                  dwt_conv_cflux_amount_left_to_dribble(g)+ &
-                  c_ccs(g) 
+                  dwt_conv_cflux_amount_left_to_dribble(g) + c_ccs(g)
        begnb(g) = totn(g) + n_tot_woodprod(g) + n_cropprod1(g)+ n_ccs(g) 
     end do
 
@@ -279,6 +278,7 @@ contains
          gru_conv_cflux          =>    cnveg_carbonflux_inst%gru_conv_cflux_col         , & ! Input:  [real(r8) (:) ]  (gC/m2/s) wood harvest (to product pools)
          gru_wood_productc_gain  =>    cnveg_carbonflux_inst%gru_wood_productc_gain_col , & ! Input:  [real(r8) (:) ]  (gC/m2/s) wood harvest (to product pools)
          crop_harvestc_to_cropprodc     =>    cnveg_carbonflux_inst%crop_harvestc_to_cropprodc_col    , & ! Input:  [real(r8) (:) ]  (gC/m2/s) crop harvest C to 1-year crop product pool
+         bioenergy_crop_harvestc_to_CCS  =>    cnveg_carbonflux_inst%bioenergy_crop_harvestc_to_CCS_col    , & ! Input:  [real(r8) (:) ]  (gC/m2/s) bioenergy crop harvest C to CCS pool
          gpp                     =>    cnveg_carbonflux_inst%gpp_col                    , & ! Input:  [real(r8) (:) ]  (gC/m2/s) gross primary production
          er                      =>    cnveg_carbonflux_inst%er_col                     , & ! Input:  [real(r8) (:) ]  (gC/m2/s) total ecosystem respiration, autotrophic + heterotrophic
          col_fire_closs          =>    cnveg_carbonflux_inst%fire_closs_col             , & ! Input:  [real(r8) (:) ]  (gC/m2/s) total column-level fire C loss
@@ -339,7 +339,8 @@ contains
             col_coutputs = col_coutputs + &
                  wood_harvestc(c) + &
                  gru_wood_productc_gain(c) + &
-                 crop_harvestc_to_cropprodc(c)
+                 crop_harvestc_to_cropprodc(c) + &
+                 bioenergy_crop_harvestc_to_CCS(c)
          
          end if
 
@@ -383,6 +384,7 @@ contains
             write(iulog,*)'col_xsmrpool_to_atm      = ',col_xsmrpool_to_atm(c)*dt
             write(iulog,*)'wood_harvestc            = ',wood_harvestc(c)*dt
             write(iulog,*)'crop_harvestc_to_cropprodc = ', crop_harvestc_to_cropprodc(c)*dt
+            write(iulog,*)'bioenergy crop_harvestc_to_CCSc = ',  bioenergy_crop_harvestc_to_CCS(c)*dt
          else
             write(iulog,*)'hr                       = ',soilbiogeochem_carbonflux_inst%hr_col(c)*dt
          end if
@@ -426,7 +428,7 @@ contains
             grc_endcb(g) = totgrcc(g) + tot_woodprod_grc(g) + cropprod1_grc(g) + &
                  hrv_xsmrpool_amount_left_to_dribble(g) + &
                  gru_conv_cflux_amount_left_to_dribble(g) + &
-                 dwt_conv_cflux_amount_left_to_dribble(g) + c_ccs(g)
+                 dwt_conv_cflux_amount_left_to_dribble(g) 
             
             ! calculate total gridcell-level inputs
             ! slevis notes:
@@ -562,7 +564,7 @@ contains
          gru_wood_productn_gain => cnveg_nitrogenflux_inst%gru_wood_productn_gain_col    , & ! Input:  [real(r8) (:) ]  (gC/m2/s) wood harvest (to product pools)
          gru_wood_productn_gain_grc => cnveg_nitrogenflux_inst%gru_wood_productn_gain_grc, & ! Input:  [real(r8) (:) ]  (gC/m2/s) wood harvest (to product pools) summed to the gridcell level
          crop_harvestn_to_cropprodn => cnveg_nitrogenflux_inst%crop_harvestn_to_cropprodn_col          , & ! Input:  [real(r8) (:) ]  (gN/m2/s) crop harvest N to 1-year crop product pool
-
+         bioenergy_crop_harvestn_to_CCS => cnveg_nitrogenflux_inst%bioenergy_crop_harvestn_to_CCS_col         , & ! Input:  [real(r8) (:) ]  (gN/m2/s) bioenergy crop harvest N to CCS. 
          totcoln             => soilbiogeochem_nitrogenstate_inst%totn_col               , & ! Input:  [real(r8) (:) ]  (gN/m2) total column nitrogen, incl veg
          sminn_to_plant      => soilbiogeochem_nitrogenflux_inst%sminn_to_plant_col,       &
          fates_litter_flux   => soilbiogeochem_nitrogenflux_inst%fates_litter_flux  &   ! Total nitrogen litter flux from FATES to CLM [gN/m2/s]
@@ -620,7 +622,8 @@ contains
             col_noutputs(c) = col_noutputs(c) + &
                  wood_harvestn(c) + &
                  gru_wood_productn_gain(c) + &
-                 crop_harvestn_to_cropprodn(c)
+                 crop_harvestn_to_cropprodn(c) + &
+                 bioenergy_crop_harvestn_to_CCS(c) 
          else
             
             ! If we are using fates, remove plant uptake
@@ -643,7 +646,8 @@ contains
          if( .not.col%is_fates(c) ) then
             col_noutputs_partial(c) = col_noutputs_partial(c) - &
                  wood_harvestn(c) - &
-                 crop_harvestn_to_cropprodn(c)
+                 crop_harvestn_to_cropprodn(c) -&
+                  bioenergy_crop_harvestn_to_CCS(c)
          end if
          
          ! calculate the total column-level nitrogen balance error for this time step
