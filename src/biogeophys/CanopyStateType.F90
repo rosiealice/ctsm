@@ -143,7 +143,7 @@ contains
     allocate(this%fsun240_patch            (begp:endp))           ; this%fsun240_patch            (:)   = nan
 
     allocate(this%dleaf_patch              (begp:endp))           ; this%dleaf_patch              (:)   = nan
-    allocate(this%wesley_pft_index_patch   (begp:endp))           ; this%wesley_pft_index_patch   (:)   = nan
+    allocate(this%wesley_pft_index_patch   (begp:endp))           ; ! is an integer so can't be nan
     allocate(this%rscanopy_patch           (begp:endp))           ; this%rscanopy_patch           (:)   = nan
 !    allocate(this%gccanopy_patch           (begp:endp))           ; this%gccanopy_patch           (:)   = 0.0_r8
     allocate(this%vegwp_patch              (begp:endp,1:nvegwcs)) ; this%vegwp_patch              (:,:) = nan
