@@ -1446,6 +1446,7 @@ module CLMFatesInterfaceMod
          displa => canopystate_inst%displa_patch, &
          dleaf_patch => canopystate_inst%dleaf_patch, &
          wesley_pft_index_patch => canopystate_inst%wesley_pft_index_patch, &
+         drydep_season_patch => canopystate_inst%drydep_season_patch, &
          snow_depth => waterdiagnosticbulk_inst%snow_depth_col, &
          frac_sno_eff => waterdiagnosticbulk_inst%frac_sno_eff_col, &
          frac_veg_nosno_alb => canopystate_inst%frac_veg_nosno_alb_patch)
@@ -1570,6 +1571,7 @@ module CLMFatesInterfaceMod
           displa(col%patchi(c)+1:col%patchf(c)) = 0.0_r8
           dleaf_patch(col%patchi(c)+1:col%patchf(c)) = 0.0_r8
           wesley_pft_index_patch(col%patchi(c)+1:col%patchf(c)) = 0
+          drydep_season_patch(col%patchi(c)+1:col%patchf(c)) = 0
           frac_veg_nosno_alb(col%patchi(c):col%patchf(c)) = 0.0_r8
 
           ! Set the bareground patch indicator
@@ -1632,6 +1634,7 @@ module CLMFatesInterfaceMod
              displa(p) = this%fates(nc)%bc_out(s)%displa_pa(ifp)
              dleaf_patch(p) = this%fates(nc)%bc_out(s)%dleaf_pa(ifp)
              wesley_pft_index_patch(p) = this%fates(nc)%bc_out(s)%wesley_pft_label_pa(ifp)
+             drydep_season_patch(p) = this%fates(nc)%bc_out(s)%drydep_season_pa(ifp)
           end do ! veg pach
 
           if(abs(areacheck - 1.0_r8).gt.1.e-9_r8)then
