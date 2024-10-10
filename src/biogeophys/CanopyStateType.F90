@@ -52,8 +52,8 @@ module CanopyStateType
 
      real(r8) , pointer :: dleaf_patch              (:)   ! patch characteristic leaf width (diameter) [m]
                                                           ! for non-ED/FATES this is the same as pftcon%dleaf()
-     integer ,  pointer :: wesley_pft_index_patch   (:)   ! Wesley PFT index for FATES drydep calculations
-     integer ,  pointer :: drydep_season_patch      (:)   ! Season for dry deposition calculations
+     integer ,  pointer :: wesley_veg_index_patch   (:)   ! Wesley PFT index for FATES dry deposition calculations
+     integer ,  pointer :: wesley_season_index_patch (:)   ! Season for dry deposition calculations
 
      real(r8) , pointer :: rscanopy_patch           (:)   ! patch canopy stomatal resistance (s/m) (ED specific)
 
@@ -147,8 +147,8 @@ contains
     allocate(this%fsun240_patch            (begp:endp))           ; this%fsun240_patch            (:)   = nan
 
     allocate(this%dleaf_patch              (begp:endp))           ; this%dleaf_patch              (:)   = nan
-    allocate(this%wesley_pft_index_patch   (begp:endp))           ; ! is an integer so can't be nan
-    allocate(this%drydep_season_patch   (begp:endp))           ; ! is an integer so can't be nan    
+    allocate(this%wesley_veg_index_patch   (begp:endp))           ; ! is an integer so can't be nan
+    allocate(this%wesley_season_index_patch   (begp:endp))           ; ! is an integer so can't be nan    
     allocate(this%rscanopy_patch           (begp:endp))           ; this%rscanopy_patch           (:)   = nan
 !    allocate(this%gccanopy_patch           (begp:endp))           ; this%gccanopy_patch           (:)   = 0.0_r8
     allocate(this%vegwp_patch              (begp:endp,1:nvegwcs)) ; this%vegwp_patch              (:,:) = nan
