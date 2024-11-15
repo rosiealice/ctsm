@@ -11,6 +11,7 @@
         aux_cime_baselines: CESM cime baselines (subset of aux_clm tests)
         hillslope: Experimental test list used for the hillslope option of the model
         rxcropmaturity: Short tests to be run during development related to prescribed crop calendars
+        matrixcn: Tests exercising the matrix-CN capability
 -->
 <testlist version="2.0">
   <test name="ERI_D_Ld9" grid="f10_f10_mg37" compset="I1850Clm60Bgc" testmods="clm/default">
@@ -25,6 +26,7 @@
   <test name="ERI_D_Ld9" grid="f10_f10_mg37" compset="I1850Clm60Bgc" testmods="clm/default--clm/matrixcnOn">
     <machines>
       <machine name="derecho" compiler="gnu" category="aux_clm"/>
+      <machine name="derecho" compiler="gnu" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:40:00</option>
@@ -47,6 +49,7 @@
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
       <machine name="derecho" compiler="intel" category="prebeta"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -158,7 +161,7 @@
       <option name="comment">CESM3 development Exact restart test for all startup types at the standard coupled resolution</option>
     </options>
   </test>
-  <test name="SMS_Lm1" grid="ne30pg3_t232" compset="I1850Clm60BgcCropG" testmods="clm/clm60cam7LndTuningMode">
+  <test name="SMS_Ld31" grid="ne30pg3_t232" compset="I1850Clm60BgcCropG" testmods="clm/clm60cam7LndTuningMode">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
       <machine name="derecho" compiler="intel" category="ctsm_sci"/>
@@ -276,6 +279,7 @@
   <test name="ERI_D_Ld9" grid="ne30_g17" compset="I2000Clm50BgcCru" testmods="clm/vrtlay--clm/matrixcnOn">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:60:00</option>
@@ -411,7 +415,7 @@
       <option name="comment"  >Include an excess ice test starting up from streams</option>
     </options>
   </test>
-  <test name="SMS_Lm12" grid="f09_f09_mg17" compset="I1850Clm60Sp" testmods="clm/ExcessIceStartup_output_sp_exice">
+  <test name="SMS_Ly1" grid="f09_f09_mg17" compset="I1850Clm60Sp" testmods="clm/ExcessIceStartup_output_sp_exice">
     <machines>
       <machine name="derecho" compiler="intel" category="ctsm_sci"/>
     </machines>
@@ -482,6 +486,7 @@
   <test name="ERI_Ld9" grid="f45_g37" compset="I2000Clm50BgcCru" testmods="clm/nofire--clm/matrixcnOn">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -517,6 +522,7 @@
   <test name="ERS_Ld3" grid="f10_f10_mg37" compset="I2000Clm60Bgc" testmods="clm/ciso_cwd_hr--clm/matrixcnOn">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -544,6 +550,7 @@
   <test name="ERP_D" grid="f10_f10_mg37" compset="IHistClm60Bgc" testmods="clm/decStart--clm/matrixcnOn_ignore_warnings">
     <machines>
       <machine name="derecho" compiler="gnu" category="aux_clm"/>
+      <machine name="derecho" compiler="gnu" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -802,6 +809,7 @@
   <test name="ERP_D_Ld5" grid="f10_f10_mg37" compset="IHistClm50BgcCrop" testmods="clm/allActive--clm/matrixcnOn_ignore_warnings">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -820,6 +828,7 @@
   <test name="ERP_D_Ld5" grid="f10_f10_mg37" compset="I2000Clm50BgcCru" testmods="clm/anoxia--clm/matrixcnOn">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -837,6 +846,7 @@
   <test name="ERP_D_Ld5" grid="f10_f10_mg37" compset="I2000Clm50BgcCru" testmods="clm/ciso_flexCN_FUN--clm/matrixcnOn">
     <machines>
       <machine name="derecho" compiler="gnu" category="aux_clm"/>
+      <machine name="derecho" compiler="gnu" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -846,14 +856,16 @@
   <test name="SMS_D" grid="f10_f10_mg37" compset="I1850Clm60BgcCrop" testmods="clm/ciso_soil_matrixcn_only">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
       <machine name="izumi"    compiler="nag"   category="aux_clm"/>
+      <machine name="izumi"    compiler="nag" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">01:20:00</option>
       <option name="comment"  >Run soil matrix solution without CN matrix with debug on and the extra options that it interacts with (isotopes and crop)</option>
     </options>
   </test>
-  <test name="ERS_Lm13" grid="f10_f10_mg37" compset="I1850Clm60Bgc" testmods="clm/monthly_matrixcn_fast_spinup">
+  <test name="ERS_Ld396" grid="f10_f10_mg37" compset="I1850Clm60Bgc" testmods="clm/monthly_matrixcn_fast_spinup">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
       <machine name="izumi"    compiler="intel" category="aux_clm"/>
@@ -863,9 +875,19 @@
       <option name="comment"  >Run matrix solution fast spinup for restart beyond a year (to trigger next year logic) turning off extra options to make faster (so without crop or isotopes). This test would've caught a previous bug.</option>
     </options>
   </test>
+  <test name="SMS_Ld31" grid="f10_f10_mg37" compset="I1850Clm60Bgc" testmods="clm/clm60_monthly_matrixcn_soilCN30">
+    <machines>
+      <machine name="derecho" compiler="intel" category="aux_clm"/>
+    </machines>
+    <options>
+      <option name="wallclock">01:20:00</option>
+      <option name="comment"  >Smoke test of soil CN-matrix on with soil CN ratio set to 30</option>
+    </options>
+  </test>
   <test name="ERS_D" grid="f19_g17" compset="I1850Clm50BgcCrop" testmods="clm/ciso_monthly_matrixcn_spinup">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">01:20:00</option>
@@ -875,6 +897,7 @@
   <test name="ERS_D" grid="f10_f10_mg37" compset="I1850Clm50BgcCrop" testmods="clm/ciso_monthly_matrixcn_spinup">
     <machines>
       <machine name="izumi"    compiler="nag" category="aux_clm"/>
+      <machine name="izumi"    compiler="nag" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">01:20:00</option>
@@ -884,15 +907,17 @@
   <test name="ERS_Lm54_Mmpi-serial" grid="1x1_numaIA" compset="I2000Clm50BgcCrop" testmods="clm/ciso_monthly_matrixcn_spinup">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">02:00:00</option>
       <option name="comment"  >Run without DEBUG for a long period for a single-point case with the matrix solution on for spinup with all options it interacts with (requires Bgc, but also turn on Crop and Carbon isotopes)</option>
     </options>
   </test>
-  <test name="LCISO_Lm13" grid="f10_f10_mg37" compset="I1850Clm50BgcCrop" testmods="clm/ciso_monthly_matrixcn_spinup">
+  <test name="LCISO_Ld396" grid="f10_f10_mg37" compset="I1850Clm50BgcCrop" testmods="clm/ciso_monthly_matrixcn_spinup">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:40:00</option>
@@ -985,6 +1010,7 @@
   <test name="ERP_D_Ld5_P48x1" grid="f10_f10_mg37" compset="I1850Clm60Bgc" testmods="clm/ciso--clm/matrixcnOn">
     <machines>
       <machine name="izumi" compiler="nag" category="aux_clm"/>
+      <machine name="izumi" compiler="nag" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -1003,6 +1029,7 @@
   <test name="ERP_D_Ld10_P64x2" grid="f10_f10_mg37" compset="IHistClm60BgcCrop" testmods="clm/ciso_decStart--clm/matrixcnOn_ignore_warnings">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:40:00</option>
@@ -1022,6 +1049,7 @@
   <test name="ERP_D_Ld10_P64x2" grid="f10_f10_mg37" compset="IHistClm60BgcCrop" testmods="clm/default--clm/matrixcnOn_ignore_warnings">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:40:00</option>
@@ -1040,6 +1068,7 @@
   <test name="SMS_Ld3_PS" grid="f09_g17" compset="IHistClm50BgcCrop" testmods="clm/f09_dec1990Start_GU_LULCC--clm/matrixcnOn_ignore_warnings">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:40:00</option>
@@ -1077,6 +1106,7 @@
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
       <machine name="derecho" compiler="intel" category="clm_short"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -1094,6 +1124,7 @@
   <test name="ERP_D_P64x2_Ld3" grid="f10_f10_mg37" compset="I2000Clm60BgcCrop" testmods="clm/coldStart--clm/matrixcnOn_ignore_warnings">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -1103,6 +1134,7 @@
   <test name="SMS_D" grid="1x1_brazil" compset="I1850Clm60BgcCrop" testmods="clm/mimics_matrixcn">
     <machines>
       <machine name="derecho" compiler="gnu" category="aux_clm"/>
+      <machine name="derecho" compiler="gnu" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -1147,6 +1179,7 @@
   <test name="ERP_D_P64x2_Ld3" grid="f10_f10_mg37" compset="I2000Clm50BgcCru" testmods="clm/flexCN_FUN--clm/matrixcnOn_ignore_warnings">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -1164,6 +1197,7 @@
   <test name="ERP_D_P64x2_Ld3" grid="f10_f10_mg37" compset="I2000Clm50BgcCru" testmods="clm/noFUN_flexCN--clm/matrixcnOn_ignore_warnings">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -1237,6 +1271,7 @@
     <machines>
       <machine name="izumi" compiler="nag" category="aux_clm"/>
       <machine name="izumi" compiler="nag" category="prealpha"/>
+      <machine name="izumi" compiler="nag" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -1297,6 +1332,7 @@
   <test name="ERP_D_Ld5_P48x1" grid="f10_f10_mg37" compset="I2000Clm50BgcCru" testmods="clm/flexCN_FUN--clm/matrixcnOn">
     <machines>
       <machine name="izumi" compiler="nag" category="aux_clm"/>
+      <machine name="izumi" compiler="nag" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -1314,6 +1350,7 @@
   <test name="ERP_D_Ld5_P48x1" grid="f10_f10_mg37" compset="I2000Clm50BgcCru" testmods="clm/noFUN_flexCN--clm/matrixcnOn">
     <machines>
       <machine name="izumi" compiler="nag" category="aux_clm"/>
+      <machine name="izumi" compiler="nag" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -1340,6 +1377,7 @@
   <test name="ERP_Ly3_P64x2" grid="f10_f10_mg37" compset="IHistClm60BgcCrop" testmods="clm/cropMonthOutput--clm/matrixcnOn_ignore_warnings">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">01:40:00</option>
@@ -1376,6 +1414,7 @@
   <test name="ERP_P64x2_D_Ld5" grid="f10_f10_mg37" compset="I1850Clm50Bgc" testmods="clm/ciso--clm/matrixcnOn_ignore_warnings">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -1408,7 +1447,7 @@
       <option name="wallclock">00:20:00</option>
     </options>
   </test>
-  <test name="ERP_P64x2_Lm13" grid="f10_f10_mg37" compset="IHistClm60Bgc" testmods="clm/monthly">
+  <test name="ERP_P64x2_Ld396" grid="f10_f10_mg37" compset="IHistClm60Bgc" testmods="clm/monthly">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
       <machine name="derecho" compiler="gnu" category="aux_clm"/>
@@ -1418,9 +1457,10 @@
       <option name="tput_tolerance">0.5</option>
     </options>
   </test>
-  <test name="ERP_P64x2_Lm13" grid="f10_f10_mg37" compset="IHistClm60Bgc" testmods="clm/monthly--clm/matrixcnOn_ignore_warnings">
+  <test name="ERP_P64x2_Ld396" grid="f10_f10_mg37" compset="IHistClm60Bgc" testmods="clm/monthly--clm/matrixcnOn_ignore_warnings">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">02:00:00</option>
@@ -1428,9 +1468,10 @@
       <option name="comment"  >Repeat ERP_P64x2_Lm13...monthly test with matrixcnOn</option>
     </options>
   </test>
-  <test name="REP_P64x2_Lm13" grid="f10_f10_mg37" compset="IHistClm60Bgc" testmods="clm/monthly--clm/matrixcnOn_ignore_warnings">
+  <test name="REP_P64x2_Ld396" grid="f10_f10_mg37" compset="IHistClm60Bgc" testmods="clm/monthly--clm/matrixcnOn_ignore_warnings">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">02:00:00</option>
@@ -1441,6 +1482,7 @@
   <test name="REP_P64x2_Ld13" grid="f10_f10_mg37" compset="IHistClm60Bgc" testmods="clm/monthly--clm/matrixcnOn_ignore_warnings">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">02:00:00</option>
@@ -1486,7 +1528,7 @@
       <option name="wallclock">00:20:00</option>
     </options>
   </test>
-  <test name="ERP_P64x2_Lm25" grid="f10_f10_mg37" compset="I2000Clm60BgcCrop" testmods="clm/monthly">
+  <test name="ERP_P64x2_Ld761" grid="f10_f10_mg37" compset="I2000Clm60BgcCrop" testmods="clm/monthly">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
     </machines>
@@ -1522,7 +1564,7 @@
       <option name="comment"  >Want a multi-year global crop restart test; this was 5 years when we were doing cold start, but 3 years is probably sufficient given that we have spun-up crop initial conditions</option>
     </options>
   </test>
-  <test name="ERP_P64x2_Lm36" grid="f10_f10_mg37" compset="I2000Clm50BgcCrop" testmods="clm/clm50cropIrrigMonth_interp">
+  <test name="ERP_P64x2_Ly3" grid="f10_f10_mg37" compset="I2000Clm50BgcCrop" testmods="clm/clm50cropIrrigMonth_interp">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
       <machine name="derecho" compiler="intel" category="prebeta"/>
@@ -1553,6 +1595,7 @@
   <test name="ERS_D" grid="f10_f10_mg37" compset="I1850Clm50BgcCrop" testmods="clm/reseedresetsnow--clm/matrixcnOn">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -1688,6 +1731,7 @@
   <test name="ERS_Ly5_Mmpi-serial" grid="1x1_smallvilleIA" compset="I1850Clm50BgcCrop" testmods="clm/ciso_monthly--clm/matrixcnOn">
     <machines>
       <machine name="izumi" compiler="gnu" category="aux_clm"/>
+      <machine name="izumi" compiler="gnu" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">02:00:00</option>
@@ -1725,6 +1769,7 @@
   <test name="ERS_Ly20_Mmpi-serial" grid="1x1_numaIA" compset="I2000Clm50BgcCropQianRs" testmods="clm/cropMonthlyNoinitial--clm/matrixcnOn">
     <machines>
       <machine name="izumi" compiler="intel" category="aux_clm"/>
+      <machine name="izumi" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock"     >04:00:00</option>
@@ -1732,7 +1777,7 @@
       <option name="comment"       >Repeat ERS_Ly20_Mmpi-serial...cropMonthlyNoinitial test with matrixcnOn</option>
     </options>
   </test>
-  <test name="ERS_Ly3" grid="f10_f10_mg37" compset="I1850Clm50BgcCropCmip6" testmods="clm/basic">
+  <test name="ERS_Ly3" grid="f10_f10_mg37" compset="I1850Clm60BgcCropCmip6" testmods="clm/basic">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
     </machines>
@@ -1771,6 +1816,7 @@
   <test name="ERS_Ly5_P128x1" grid="f10_f10_mg37" compset="IHistClm60BgcCrop" testmods="clm/cropMonthOutput--clm/matrixcnOn_ignore_warnings">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">01:40:00</option>
@@ -1827,6 +1873,7 @@
   <test name="ERS_Ly6_Mmpi-serial" grid="1x1_smallvilleIA" compset="IHistClm50BgcCropQianRs" testmods="clm/cropMonthOutput--clm/matrixcnOn_ignore_warnings">
     <machines>
       <machine name="izumi" compiler="intel" category="aux_clm"/>
+      <machine name="izumi" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">02:00:00</option>
@@ -1857,6 +1904,7 @@
   <test name="LII_D_Ld3_PS" grid="f19_g17" compset="I2000Clm50BgcCrop" testmods="clm/default--clm/matrixcnOn">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -1875,6 +1923,7 @@
   <test name="LII2FINIDATAREAS_D_P256x2_Ld1" grid="f09_g17" compset="I1850Clm50BgcCrop" testmods="clm/default--clm/matrixcnOn_ignore_warnings">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -1890,7 +1939,7 @@
       <option name="comment"  >Include one LVG debug test (exact configuration is not very important). Note that the LVG test will fail if there is any 1-d output, or output separated by glacier elevation classes (e.g., the various *_FORC fields), so this includes a testmod that turns off any 1-d output.</option>
     </options>
   </test>
-  <test name="LCISO_Lm13" grid="f10_f10_mg37" compset="IHistClm60BgcCrop" testmods="clm/ciso_monthly">
+  <test name="LCISO_Ld396" grid="f10_f10_mg37" compset="IHistClm60BgcCrop" testmods="clm/ciso_monthly">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
       <machine name="derecho" compiler="intel" category="prebeta"/>
@@ -1900,10 +1949,11 @@
       <option name="comment"  >Make sure Carbon isotopes on and off with land-use change, does NOT change answers. To verify for landuse change must go beyond a year boundary, because of #404 we can't use a December start, so need to run for beyond the year boundary.</option>
     </options>
   </test>
-  <test name="LCISO_Lm13" grid="f10_f10_mg37" compset="IHistClm60BgcCrop" testmods="clm/ciso_monthly--clm/matrixcnOn_ignore_warnings">
+  <test name="LCISO_L396" grid="f10_f10_mg37" compset="IHistClm60BgcCrop" testmods="clm/ciso_monthly--clm/matrixcnOn_ignore_warnings">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
       <machine name="derecho" compiler="intel" category="prebeta"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">01:30:00</option>
@@ -1941,6 +1991,7 @@
     <machines>
       <machine name="izumi" compiler="intel" category="aux_clm"/>
       <machine name="izumi" compiler="intel" category="prebeta"/>
+      <machine name="izumi" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -1960,6 +2011,7 @@
   <test name="PET_P64x2_D" grid="f10_f10_mg37" compset="I1850Clm50BgcCrop" testmods="clm/default--clm/matrixcnOn_ignore_warnings">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -1979,7 +2031,6 @@
   </test>
   <test name="SMS" grid="f45_f45_mg37" compset="I2000Clm60FatesSpRsGs" testmods="clm/FatesColdSatPhen">
     <machines>
-      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
       <machine name="derecho" compiler="nvhpc" category="aux_clm"/>
       <machine name="derecho" compiler="nvhpc" category="fates"/>
     </machines>
@@ -1988,7 +2039,7 @@
       <option name="comment"  >Simple test to make sure the basic Fates-SP compset works"</option>
     </options>
   </test>
-  <test name="SMS_D_Ld1" grid="ne30pg3_t061" compset="I1850Clm50BgcSpinup" testmods="clm/cplhist">
+  <test name="SMS_D_Ld1" grid="ne30pg3_t232" compset="I1850Clm50BgcSpinup" testmods="clm/cplhist">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
       <machine name="derecho" compiler="intel" category="prealpha"/>
@@ -1997,10 +2048,11 @@
       <option name="wallclock">00:20:00</option>
     </options>
   </test>
-  <test name="SMS_D_Ld1" grid="ne30pg3_t061" compset="I1850Clm50BgcSpinup" testmods="clm/cplhist--clm/matrixcnOn">
+  <test name="SMS_D_Ld1" grid="ne30pg3_t232" compset="I1850Clm50BgcSpinup" testmods="clm/cplhist--clm/matrixcnOn">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
       <machine name="derecho" compiler="intel" category="prealpha"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -2206,6 +2258,7 @@
       <machine name="derecho" compiler="intel" category="clm_short"/>
       <machine name="derecho" compiler="intel" category="prealpha"/>
       <machine name="derecho" compiler="intel" category="aux_cime_baselines"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -2274,7 +2327,9 @@
   <test name="SMS_Ld10_D_Mmpi-serial" grid="CLM_USRDAT" compset="I1PtClm60Bgc" testmods="clm/default--clm/NEON/HARV--clm/matrixcnOn">
     <machines>
       <machine name="derecho"  compiler="gnu" category="aux_clm"/>
+      <machine name="derecho"  compiler="gnu" category="matrixcn"/>
       <machine name="izumi"    compiler="nag"   category="aux_clm"/>
+      <machine name="izumi"    compiler="nag" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
@@ -2305,7 +2360,7 @@
     </options>
   </test>
 
-  <test name="ERS_P128x1_Lm25" grid="f10_f10_mg37" compset="I2000Clm60Fates" testmods="clm/FatesColdNoComp">
+  <test name="ERS_P128x1_Ld761" grid="f10_f10_mg37" compset="I2000Clm60Fates" testmods="clm/FatesColdNoComp">
     <machines>
       <!-- no izumi tests since this has a pe layout specific for derecho -->
       <machine name="derecho" compiler="intel"   category="aux_clm"/>
@@ -2355,6 +2410,7 @@
   <test name="ERS_D_Ld5" grid="f10_f10_mg37" compset="IHistClm50BgcQian" testmods="clm/ciso_bombspike1963DecStart--clm/matrixcnOn_ignore_warnings">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:40:00</option>
@@ -2370,7 +2426,7 @@
       <option name="comment"  >Want a debug test that tests a number of aspects of transient crops, including a new crop landunit and shifting PCT_CFT; move to CLM50 once we can get it fast enough (see bug 2391)</option>
     </options>
   </test>
-  <test name="ERS_Lm25" grid="1x1_smallvilleIA" compset="IHistClm50BgcCropQianRs" testmods="clm/smallville_dynlakes_monthly">
+  <test name="ERS_Ld761" grid="1x1_smallvilleIA" compset="IHistClm50BgcCropQianRs" testmods="clm/smallville_dynlakes_monthly">
     <machines>
       <machine name="derecho" compiler="gnu" category="aux_clm"/>
     </machines>
@@ -2379,7 +2435,7 @@
       <option name="comment">Include a test of transient lakes</option>
     </options>
   </test>
-  <test name="ERS_Lm25" grid="1x1_smallvilleIA" compset="IHistClm50BgcCropQianRs" testmods="clm/smallville_dynurban_monthly">
+  <test name="ERS_Ld761" grid="1x1_smallvilleIA" compset="IHistClm50BgcCropQianRs" testmods="clm/smallville_dynurban_monthly">
     <machines>
       <machine name="derecho" compiler="gnu" category="aux_clm"/>
     </machines>
@@ -2432,7 +2488,7 @@
       <option name="comment"  >include a production intel test of Clm45</option>
     </options>
   </test>
-  <test name="SMS_Ld2_D_PS" grid="f09_g17" compset="I1850Clm50BgcCropCmip6" testmods="clm/basic_interp">
+  <test name="SMS_Ld2_D_PS" grid="f09_g17" compset="I1850Clm60BgcCropCmip6" testmods="clm/basic_interp">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
     </machines>
@@ -2516,13 +2572,14 @@
   <test name="ERP_D_Ld5" grid="f10_f10_mg37" compset="I1850Clm50Bgc" testmods="clm/nlevgrnd_small--clm/matrixcnOn">
     <machines>
       <machine name="izumi" compiler="intel" category="aux_clm"/>
+      <machine name="izumi" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">0:20:00</option>
       <option name="comment">Repeat nlevgrnd_small test with matrixcnOn</option>
     </options>
   </test>
-  <test name="SMS_Lm13_PS" grid="f19_g17" compset="I2000Clm60BgcCrop" testmods="clm/cropMonthOutput">
+  <test name="SMS_Ld396_PS" grid="f19_g17" compset="I2000Clm60BgcCrop" testmods="clm/cropMonthOutput">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
     </machines>
@@ -2563,6 +2620,7 @@
   <test name="SSPMATRIXCN_Ly5_Mmpi-serial" grid="1x1_numaIA" compset="I2000Clm50BgcCropQianRs" testmods="clm/ciso_monthly">
     <machines>
       <machine name="izumi"    compiler="intel" category="aux_clm"/>
+      <machine name="izumi"    compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">01:00:00</option>
@@ -2641,7 +2699,6 @@
   </test>
   <test name="ERS_D_Ld15" grid="f45_f45_mg37" compset="I2000Clm50FatesRs" testmods="clm/FatesColdTreeDamage">
     <machines>
-      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
       <machine name="derecho" compiler="intel" category="fates"/>
     </machines>
     <options>
@@ -2671,7 +2728,6 @@
   </test>
   <test name="ERS_D_Ld3_PS" grid="f09_g17" compset="I2000Clm50FatesRs" testmods="clm/FatesCold">
     <machines>
-      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
     </machines>
     <options>
@@ -2698,7 +2754,7 @@
       <option name="wallclock">00:40:00</option>
     </options>
   </test>
-  <test name="ERS_Lm13" grid="f10_f10_mg37" compset="I2000Clm50Fates" testmods="clm/FatesCold">
+  <test name="ERS_Ld396" grid="f10_f10_mg37" compset="I2000Clm50Fates" testmods="clm/FatesCold">
     <machines>
       <machine name="derecho" compiler="gnu" category="fates"/>
     </machines>
@@ -2706,9 +2762,8 @@
       <option name="wallclock">00:50:00</option>
     </options>
   </test>
-  <test name="ERS_Lm13" grid="f45_f45_mg37" compset="I2000Clm50Fates" testmods="clm/FatesColdNoComp">
+  <test name="ERS_Ld396" grid="f45_f45_mg37" compset="I2000Clm50Fates" testmods="clm/FatesColdNoComp">
     <machines>
-      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
       <machine name="derecho" compiler="intel" category="fates"/>
     </machines>
     <options>
@@ -3170,15 +3225,16 @@
       <option name="comment"  >Run a test with dry deposition on and FATES-SP</option>
     </options>
   </test>
-  <test name="SMS_D" grid="1x1_brazil" compset="I2000Clm60FatesSpCruRsGs" testmods="clm/FatesColdMeganSatPhen">
-    <machines>
-      <machine name="derecho" compiler="gnu" category="aux_clm"/>
-    </machines>
-    <options>
-      <option name="wallclock">00:20:00</option>
-      <option name="comment"  >Run a test with MEGAN on and FATES-SP</option>
-    </options>
-  </test>
+  <!-- TODO: remove since megan will always be on with FATES now -->
+  <!-- <test name="SMS_D" grid="1x1_brazil" compset="I2000Clm60FatesSpCruRsGs" testmods="clm/FatesColdMeganSatPhen"> -->
+  <!--   <machines> -->
+  <!--     <machine name="derecho" compiler="gnu" category="aux_clm"/> -->
+  <!--   </machines> -->
+  <!--   <options> -->
+  <!--     <option name="wallclock">00:20:00</option> -->
+  <!--     <option name="comment"  >Run a test with MEGAN on and FATES-SP</option> -->
+  <!--   </options> -->
+  <!-- </test> -->
 
   <test name="SMS_D_Ld3" grid="f09_g17" compset="I2000Clm60FatesSpCruRsGs" testmods="clm/FatesColdSatPhen_prescribed">
     <machines>
@@ -3247,7 +3303,7 @@
       <option name="comment"  >Run a short non-Fates test (without land-ice model) in the fates test list, to make sure fates changes do not mess up the standard model</option>
     </options>
   </test>
-  <test name="SMS_Lm13" grid="1x1_brazil" compset="I2000Clm50FatesCruRsGs" testmods="clm/FatesCold">
+  <test name="SMS_Ld396" grid="1x1_brazil" compset="I2000Clm50FatesCruRsGs" testmods="clm/FatesCold">
     <machines>
       <machine name="derecho" compiler="intel" category="fates"/>
       <machine name="derecho" compiler="gnu" category="fates"/>
@@ -3257,7 +3313,7 @@
       <option name="comment">13 month single site FATES smoke test.</option>
     </options>
   </test>
-  <test name="ERS_Lm12" grid="1x1_brazil" compset="I2000Clm50FatesCruRsGs" testmods="clm/FatesFireLightningPopDens">
+  <test name="ERS_Ly1" grid="1x1_brazil" compset="I2000Clm50FatesCruRsGs" testmods="clm/FatesFireLightningPopDens">
     <machines>
       <machine name="derecho" compiler="intel" category="fates"/>
     </machines>
@@ -3266,7 +3322,7 @@
       <option name="comment">12 month exact restart FATES single site debug test covering anthropogenic fire ignition mode.</option>
     </options>
   </test>
-  <test name="SMS_Lm1" grid="f10_f10_mg37" compset="I1850Clm50BgcCropCmip6waccm" testmods="clm/basic">
+  <test name="SMS_Lm1" grid="f10_f10_mg37" compset="I1850Clm60BgcCropCmip6waccm" testmods="clm/basic">
     <machines>
       <machine name="derecho" compiler="gnu" category="aux_clm"/>
       <machine name="derecho" compiler="gnu" category="prealpha"/>
@@ -3336,9 +3392,10 @@
       <option name="tput_tolerance">0.1</option>
     </options>
   </test>
-  <test name="PFS_Ld10_PS" grid="f19_g17" compset="I2000Clm50BgcCrop" testmods="clm/matrixcnOn">
+  <test name="PFS_Ld10_PS" grid="f19_g17" compset="I2000Clm50BgcCrop" testmods="clm/default--clm/matrixcnOn">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_clm"/>
+      <machine name="derecho" compiler="intel" category="matrixcn"/>
     </machines>
     <options>
       <option name="wallclock">00:30:00</option>
@@ -3515,23 +3572,24 @@
     </options>
   </test>
 
-  <test name="SMS_D_Mmpi-serial_Ld5" grid="5x5_amazon" compset="I1850Clm60Bgc" testmods="clm/HillslopeC">
+  <test name="SMS_D_Mmpi-serial_Ld5" grid="5x5_amazon" compset="I2000Clm60Bgc" testmods="clm/HillslopeC">
     <machines>
       <machine name="derecho" compiler="gnu" category="aux_clm"/>
       <machine name="derecho" compiler="gnu" category="hillslope"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
+      <option name="comment">Serial test of 5x5_amazon hillslopes</option>
     </options>
   </test>
 
-  <test name="SMS_D_Ld5" grid="5x5_amazon" compset="I1850Clm60Bgc" testmods="clm/HillslopeC">
+  <test name="SMS_D_Ld5" grid="5x5_amazon" compset="I2000Clm60Bgc" testmods="clm/HillslopeC">
     <machines>
-      <machine name="derecho" compiler="gnu" category="aux_clm"/>
+      <machine name="derecho" compiler="gnu" category="hillslope"/>
     </machines>
     <options>
       <option name="wallclock">00:20:00</option>
-      <option name="comment">Add a non-FATES test to aux_clm for 5x5_amazon that fails because of the ccs_config issue, can remove once this passes</option>
+      <option name="comment">Parallel test of 5x5_amazon hillslopes</option>
     </options>
   </test>
 
@@ -3679,5 +3737,253 @@
     </options>
   </test>
 
+  <!-- ********************************************************************************** -->
+  <!--   NORESM Tests -->
+  <!-- ********************************************************************************** -->
+
+  <!-- FATES-SP -->
+
+  <test name="SMS" grid="ne30pg3_ne30pg3_mtn14" compset="2000_DATM%GSWP3v1_CLM60%FATES-SP_SICE_SOCN_SROF_SGLC_SWAV" testmods="clm/FatesColdSatPhen">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:30:00</option>
+      <option name="comment">Simple test to make sure the basic Fates-SP compset works</option>
+    </options>
+  </test>
+  <test name="ERP_Ld30" grid="f45_f45_mg37" compset="2000_DATM%GSWP3v1_CLM60%FATES-SP_SICE_SOCN_SROF_SGLC_SWAV" testmods="clm/FatesColdSatPhen">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:30:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
+  <test name="SMS_D" grid="ne30pg3_ne30pg3_mtn14" compset="2000_DATM%GSWP3v1_CLM60%FATES-SP_SICE_SOCN_SROF_SGLC_SWAV" testmods="clm/FatesColdDryDepSatPhen">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
+  <test name="SMS_D_Ld3" grid="ne30pg3_ne30pg3_mtn14" compset="2000_DATM%GSWP3v1_CLM60%FATES-SP_SICE_SOCN_SROF_SGLC_SWAV" testmods="clm-FatesColdSatPhen_prescribed">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment"></option>
+    </options>
+  </test>
+
+  <!-- FATES-NOCOMP -->
+
+  <test name="ERS_Ld761" grid="ne30pg3_ne30pg3_mtn14" compset="2000_DATM%GSWP3v1_CLM60%FATES-NOCOMP_SICE_SOCN_MOSART_SGLC_SWAV" testmods="clm/FatesColdNoComp">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:50:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
+  <test name="ERS_Ld761" grid="f45_f45_mg37" compset="2000_DATM%GSWP3v1_CLM60%FATES-NOCOMP_SICE_SOCN_MOSART_SGLC_SWAV" testmods="clm-FatesColdTwoStreamNoCompFixedBioGeo">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:30:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
+  <test name="ERS_D_Ld15" grid="f45_f45_mg37" compset="2000_DATM%GSWP3v1_CLM60%FATES-NOCOMP_SICE_SOCN_MOSART_SGLC_SWAV" testmods="clm-FatesColdTwoStreamNoCompFixedBioGeo">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:30:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
+
+  <!-- FATES-FULL -->
+
+  <test name="ERP_D" grid="f45_f45_mg37" compset="2000_DATM%GSWP3v1_CLM60%FATES_SICE_SOCN_SROF_SGLC_SWAV" testmods="clm/FatesCold">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:50:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
+  <test name="SMS_D" grid="1x1_brazil" compset="2000_DATM%GSWP3v1_CLM60%FATES-SP_SICE_SOCN_SROF_SGLC_SWAV" testmods="clm/FatesColdDryDepSatPhen">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
+  <test name="ERS_D_Ld5" grid="5x5_amazon" compset="2000_DATM%GSWP3v1_CLM60%FATES_SICE_SOCN_SROF_SGLC_SWAV" testmods="clm/FatesCold">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
+
+  <!-- non-FATES SP tests -->
+
+  <test name="ERP_D_Ld5" grid="f45_f45_mg37" compset="2000_DATM%GSWP3v1_CLM60%SP_SICE_SOCN_MOSART_SGLC_SWAV" testmods="clm/decStart">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
+  <test name="ERP_D_Ld5" grid="f45_f45_mg37" compset="HIST_DATM%GSWP3v1_CLM60%SP_SICE_SOCN_MOSART_SGLC_SWAV" testmods="clm/default">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
+  <test name="ERS_D" grid="f45_f45_mg37" compset="1850_DATM%GSWP3v1_CLM60%SP_SICE_SOCN_MOSART_SGLC_SWAV" testmods="clm/default">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
+
+  <!-- BGC tests -->
+
+  <test name="ERI_D_Ld9" grid="f45_f45_mg37" compset="1850_DATM%GSWP3v1_CLM60%BGC_SICE_SOCN_MOSART_SGLC_SWAV" testmods="clm/default">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
+
+  <test name="ERP_D" grid="f45_f45_mg37" compset="HIST_DATM%GSWP3v1_CLM60%BGC_SICE_SOCN_MOSART_SGLC_SWAV" testmods="clm/decStart">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
+
+  <test name="ERP_Ld761" grid="f45_f45_mg37" compset="HIST_DATM%GSWP3v1_CLM60%BGC_SICE_SOCN_MOSART_SGLC_SWAV" testmods="clm/monthly">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:50:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
+
+  <!-- BGCCrop tests -->
+
+  <test name="ERI_Ld9" grid="f45_f45_mg37" compset="2000_DATM%GSWP3v1_CLM60%BGC-CROP_SICE_SOCN_MOSART_SGLC_SWAV" testmods="clm/default">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
+
+  <test name="ERP_D_Ld10" grid="f45_f45_mg37" compset="HIST_DATM%GSWP3v1_CLM60%BGC-CROP_SICE_SOCN_MOSART_SGLC_SWAV" testmods="clm/default">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:50:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
+
+  <test name="ERP_D_Ld3" grid="f45_f45_mg37" compset="2000_DATM%GSWP3v1_CLM60%BGC-CROP_SICE_SOCN_MOSART_SGLC_SWAV" testmods="clm/coldStart">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
+
+  <test name="ERP_D_Ld3" grid="ne30pg3_ne30pg3_mtn14" compset="1850_DATM%GSWP3v1_CLM60%BGC-CROP_SICE_SOCN_MOSART_SGLC_SWAV" testmods="clm/mimics">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:50:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
+
+  <test name="ERP_D_Ld5" grid="f45_f45_mg37" compset="2000_DATM%GSWP3v1_CLM60%BGC-CROP_SICE_SOCN_MOSART_SGLC_SWAV" testmods="clm/irrig_spunup">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
+
+  <test name="SMS_Ld761" grid="f19_g17" compset="2000_DATM%GSWP3v1_CLM50%BGC-CROP_SICE_SOCN_MOSART_SGLC_SWAV" testmods="clm/cropMonthOutput">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:50:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
+
+  <test name="ERP_D_Ld10" grid="f45_f45_mg37" compset="1850_DATM%GSWP3v1_CLM60%BGC-CROP_SICE_SOCN_MOSART_SGLC_SWAV" testmods="clm/ADspinup">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
+
+  <!-- single point non-FATES -->
+
+  <test name="ERS_D_Ld5" grid="1x1_mexicocityMEX" compset="2000_DATM%1PT_CLM60%SP_SICE_SOCN_SROF_SGLC_SWAV" testmods="clm/CLM1PTStartDate">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_clm_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock">00:20:00</option>
+      <option name="comment">""</option>
+    </options>
+  </test>
 
 </testlist>
