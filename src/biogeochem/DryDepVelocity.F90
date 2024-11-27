@@ -1,3 +1,4 @@
+
 Module DryDepVelocity
 
   !-----------------------------------------------------------------------
@@ -169,7 +170,7 @@ CONTAINS
 
     do ispec=1,n_drydep
        if(mapping(ispec) <= 0) cycle
-
+       
        this%velocity_patch(begp:endp,ispec)= spval
        ptr_1d => this%velocity_patch(begp:endp,ispec)
        call hist_addfld1d ( fname='DRYDEPV_'//trim(drydep_list(ispec)), units='cm/sec',  &
@@ -368,7 +369,7 @@ CONTAINS
                 endif
              endif   
 
-             if(wesveg<0 .or. wesveg>1 )then
+             if(wesveg<0 .or. wesveg>12 )then
                 call endrun(subgrid_index=pi, subgrid_level=subgrid_level_patch, &
                     msg='ERROR: No sensible Wesley vegetation type'//&
                     errMsg(sourcefile, __LINE__))
