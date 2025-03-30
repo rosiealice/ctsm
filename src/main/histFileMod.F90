@@ -24,6 +24,7 @@ module histFileMod
   use PatchType      , only : patch
   use EDParamsMod    , only : nclmax
   use EDParamsMod    , only : nlevleaf
+  use EDParamsMod    , only : num_emission_compounds
   use FatesInterfaceTypesMod , only : nlevsclass, nlevage, nlevcoage
   use FatesInterfaceTypesMod , only : nlevheight
   use FatesInterfaceTypesMod , only : nlevdamage
@@ -5813,6 +5814,8 @@ contains
        num2d = n_landuse_cats
     case ('fates_levlulu')
        num2d = n_landuse_cats * n_landuse_cats
+    case ('fates_levemis')
+       num2d = num_emission_compounds
     case('cft')
        if (cft_size > 0) then
           num2d = cft_size
