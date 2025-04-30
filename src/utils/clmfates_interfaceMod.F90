@@ -2920,44 +2920,44 @@ module CLMFatesInterfaceMod
  
 ! ======================================================================================
 
- subroutine wrap_FatesAtmosphericCarbonFluxes(this, bounds_clump, fc, filterc)
+ subroutine wrap_FatesAtmosphericCarbonFluxes(this, bounds_clump, fc, filterc,cnveg_carbonflux_inst)
 
    ! summarize the high-level fluxes that integrate information from both
    ! FATES and outside-of-FATES decomposition and product decay code.
    
    use FatesConstantsMod     , only : g_per_kg
-   use cnveg_carbonfluxMod   , only : cnveg_carbonflux_inst
-   ! !ARGUMENTS:
+   use CNVegCarbonFluxType                , only : cnveg_carbonflux_type
+
+    ! !ARGUMENTS:
    class(hlm_fates_interface_type), intent(inout) :: this
    type(bounds_type)              , intent(in)    :: bounds_clump
    integer                        , intent(in)    :: fc                   ! size of column filter
    integer                        , intent(in)    :: filterc(fc)          ! column filter
+   type(cnveg_carbonflux_type) , intent(inout) ::   cnveg_carbonflux_inst
    
    ! Locacs
-   integer                                        :: s,c,icc
+   integer                                        :: g,s,c,icc
    integer                                        :: nc
 
    associate(&
-        nep     => col_cf%nep    , &
-        nee     => col_cf%nee    , &
-        nbp     => cnveg_carbonflux_inst%nbp_grc col_cf%nbp    , &
-        product_closs => col_cf%product_closs ,  &
-        hr     => col_cf%hr)
- 
-    nc = bounds_clump%clump_index
-    ! Loop over columns
-    do icc = 1,fc
-       c = filterc(icc)
-       s = this%f2hmap(nc)%hsites(c)
+        nep     => cnveg_carbonflux_inst%nep_col    , &
+        nee     => cnveg_carbonflux_inst%nee_grc    , &
+        nbp     => cnveg_carbonflux_inst%nbp_grc    )
+        !product_closs => cnveg_carbonflux_inst%product_closs ,  &
+        !hr     => cnveg_carbonflux_inst%hr)
+
+    do s = 1, this%fates(nc)%nsites
+       c = this%f2hmap(nc)%fcolumn(s)
+       g = col%gridcell(c)    
 
        nep(c) = this%fates(nc)%bc_out(s)%gpp_site*g_per_kg &
-            - this%fates(nc)%bc_out(s)%ar_site*g_per_kg &
-            - hr(c)
+            - this%fates(nc)%bc_out(s)%ar_site*g_per_kg !&
+  !          - hr(c)
 
-       nbp(c) = nep(c) &
-            - this%fates(nc)%bc_out(s)%grazing_closs_to_atm_si*g_per_kg &
-            - this%fates(nc)%bc_out(s)%fire_closs_to_atm_si*g_per_kg &
-            - product_closs(c)
+       !nbp(c) = nep(c) &
+!            - this%fates(nc)%bc_out(s)%grazing_closs_to_atm_si*g_per_kg &
+!            - this%fates(nc)%bc_out(s)%fire_closs_to_atm_si*g_per_kg &
+!            - product_closs(c)
 
        nee(c) = -nbp(c)
 
@@ -3685,7 +3685,7 @@ module CLMFatesInterfaceMod
     integer :: n
     integer :: num_filter_fates
     integer :: nlevsoil
-
+    integer :: nc
 
     if( .not. use_fates_planthydro ) return
 
