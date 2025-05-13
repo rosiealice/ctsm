@@ -255,6 +255,7 @@ module CLMFatesInterfaceMod
       procedure, public :: wrap_btran
       procedure, public :: wrap_drydep      
       procedure, public :: wrap_photosynthesis
+      procedure, public :: wrap_atmosphericCarbonFluxes
       procedure, public :: wrap_accumulatefluxes
       procedure, public :: prep_canopyfluxes
       procedure, public :: wrap_canopy_radiation
@@ -272,7 +273,6 @@ module CLMFatesInterfaceMod
       procedure, public  :: wrap_hydraulics_drive
       procedure, public  :: WrapUpdateFatesRmean
       procedure, public  :: wrap_WoodProducts
-      procedure, public  :: wrap_FatesAtmosphericCarbonFluxes
       procedure, public  :: WrapGlobalSeedDispersal
       procedure, public  :: WrapUpdateFatesSeedInOut
       procedure, public  :: UpdateCLitterFluxes
@@ -2920,52 +2920,59 @@ module CLMFatesInterfaceMod
  
 ! ======================================================================================
 
- subroutine wrap_FatesAtmosphericCarbonFluxes(this, bounds_clump, fc, filterc,cnveg_carbonflux_inst)
+ subroutine wrap_atmosphericCarbonFluxes(this,nc,bounds_clump,soilbiogeochem_carbonflux_inst,c_products_inst)
 
    ! summarize the high-level fluxes that integrate information from both
    ! FATES and outside-of-FATES decomposition and product decay code.
-   
+   use subgridAveMod                      , only: c2g
    use FatesConstantsMod     , only : g_per_kg
-   use CNVegCarbonFluxType                , only : cnveg_carbonflux_type
-
-    ! !ARGUMENTS:
-   class(hlm_fates_interface_type), intent(inout) :: this
-   type(bounds_type)              , intent(in)    :: bounds_clump
-   integer                        , intent(in)    :: fc                   ! size of column filter
-   integer                        , intent(in)    :: filterc(fc)          ! column filter
-   type(cnveg_carbonflux_type) , intent(inout) ::   cnveg_carbonflux_inst
    
-   ! Locacs
-   integer                                        :: g,s,c,icc
-   integer                                        :: nc
+   ! !ARGUMENTS:
+   type(bounds_type),  intent(in)             :: bounds_clump
+   class(hlm_fates_interface_type), intent(inout) :: this
+   integer, intent(in) :: nc   
+   type(soilbiogeochem_carbonflux_type), intent(in) :: soilbiogeochem_carbonflux_inst
+   type(cn_products_type)         , intent(inout) :: c_products_inst
+   
+   integer                                        :: g,s,c
 
+   ! NEP, NEE and NBP are outputs
+   ! product loss, hr and fire are inputs. 
    associate(&
-        nep     => cnveg_carbonflux_inst%nep_col    , &
-        nee     => cnveg_carbonflux_inst%nee_grc    , &
-        nbp     => cnveg_carbonflux_inst%nbp_grc    )
-        !product_closs => cnveg_carbonflux_inst%product_closs ,  &
-        !hr     => cnveg_carbonflux_inst%hr)
+        nep     => soilbiogeochem_carbonflux_inst%fates_nep_col    , &
+        nee     => soilbiogeochem_carbonflux_inst%fates_nee_col    , &
+        nbp     => soilbiogeochem_carbonflux_inst%fates_nbp_col    , &    
+        product_closs => c_products_inst%product_loss_grc ,  &   ! Gridcell level product C loss from all pools. gC/m2/s
+        hr     => soilbiogeochem_carbonflux_inst%hr_col) 
 
     do s = 1, this%fates(nc)%nsites
        c = this%f2hmap(nc)%fcolumn(s)
        g = col%gridcell(c)    
-
+     
        nep(c) = this%fates(nc)%bc_out(s)%gpp_site*g_per_kg &
-            - this%fates(nc)%bc_out(s)%ar_site*g_per_kg !&
-  !          - hr(c)
+            - this%fates(nc)%bc_out(s)%ar_site*g_per_kg &
+            - hr(c)
 
-       !nbp(c) = nep(c) &
-!            - this%fates(nc)%bc_out(s)%grazing_closs_to_atm_si*g_per_kg &
-!            - this%fates(nc)%bc_out(s)%fire_closs_to_atm_si*g_per_kg &
-!            - product_closs(c)
+       write(*,*) ' product_closs', c,g !, product_closs(g)
+       nbp(c) = nep(c) &
+            - this%fates(nc)%bc_out(s)%grazing_closs_to_atm_si*g_per_kg &
+            - this%fates(nc)%bc_out(s)%fire_closs_to_atm_si*g_per_kg !&
+ !           - product_closs(g)
 
        nee(c) = -nbp(c)
-
     end do
+
+    call c2g( bounds = bounds_clump, &
+            carr = soilbiogeochem_carbonflux_inst%fates_nbp_col(bounds_clump%begc:bounds_clump%endc), &
+            garr = soilbiogeochem_carbonflux_inst%fates_nbp_grc(bounds_clump%begg:bounds_clump%endg), &
+            c2l_scale_type = 'unity', &
+            l2g_scale_type = 'unity')
+
 
     end associate
     return
-  end subroutine wrap_FatesAtmosphericCarbonFluxes
+  end subroutine wrap_atmosphericCarbonFluxes
+  
 
   ! ======================================================================================     
 
@@ -3578,6 +3585,7 @@ module CLMFatesInterfaceMod
 
         select case(trim(ioname))
         case(site_r8)
+
            call hist_addfld1d(fname=trim(vname),units=trim(vunits),         &
                               avgflag=trim(vavgflag),long_name=trim(vlong), &
                               ptr_col=fates_hist%hvars(ivar)%r81d,      &
