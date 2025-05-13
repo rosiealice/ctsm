@@ -1061,7 +1061,7 @@ contains
        soilbiogeochem_carbonflux_inst, soilbiogeochem_carbonstate_inst, &
        c13_soilbiogeochem_carbonflux_inst, c13_soilbiogeochem_carbonstate_inst, &
        c14_soilbiogeochem_carbonflux_inst, c14_soilbiogeochem_carbonstate_inst, &
-       soilbiogeochem_nitrogenflux_inst, soilbiogeochem_nitrogenstate_inst)
+       soilbiogeochem_nitrogenflux_inst, soilbiogeochem_nitrogenstate_inst,c_products_inst)
     !
     ! !DESCRIPTION:
     ! Do the main science for CN vegetation that needs to be done after hydrology-drainage
@@ -1100,6 +1100,7 @@ contains
     type(soilbiogeochem_carbonstate_type)   , intent(inout) :: c14_soilbiogeochem_carbonstate_inst
     type(soilbiogeochem_nitrogenflux_type)  , intent(inout) :: soilbiogeochem_nitrogenflux_inst
     type(soilbiogeochem_nitrogenstate_type) , intent(inout) :: soilbiogeochem_nitrogenstate_inst
+     type(cn_products_type)                 , intent(inout) :: c_products_inst    
     !
     ! !LOCAL VARIABLES:
 
@@ -1141,7 +1142,6 @@ contains
     call t_stopf('SoilBiogeochemPrecisionControl')
 
     ! Call to all CN summary routines
-
     call CNDriverSummarizeStates(bounds, &
          num_allc, filter_allc, &
          num_bgc_soilc, filter_bgc_soilc, &

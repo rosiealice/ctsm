@@ -84,6 +84,7 @@ module clm_driver
   use clm_instMod
   use SoilMoistureStreamMod  , only : PrescribedSoilMoistureInterp, PrescribedSoilMoistureAdvance
   use SoilBiogeochemDecompCascadeConType , only : no_soil_decomp, decomp_method
+  use CNProductsMod                   , only : cn_products_type
   !
   ! !PUBLIC TYPES:
   implicit none
@@ -128,6 +129,9 @@ contains
     logical,         intent(in) :: nlend       ! true => end of run on this step
     character(len=*),intent(in) :: rdate       ! restart file time stamp for name
 
+    !where are all the other instances defined? I can't figure this out! 
+    type(cn_products_type)   :: c_products_inst
+    
     ! Whether we're running with a prognostic ROF component. This shouldn't change from
     ! timestep to timestep, but we pass it into the driver loop because it isn't available
     ! in initialization.
@@ -1104,7 +1108,6 @@ contains
 
        call t_stopf('hydro2_drainage')
 
-       
        if (use_cn .or. use_fates_bgc) then
           call t_startf('EcosysDynPostDrainage')
           call bgc_vegetation_inst%EcosystemDynamicsPostDrainage(bounds_clump, &
@@ -1120,7 +1123,7 @@ contains
                soilbiogeochem_carbonflux_inst, soilbiogeochem_carbonstate_inst, &
                c13_soilbiogeochem_carbonflux_inst, c13_soilbiogeochem_carbonstate_inst, &
                c14_soilbiogeochem_carbonflux_inst, c14_soilbiogeochem_carbonstate_inst, &
-               soilbiogeochem_nitrogenflux_inst, soilbiogeochem_nitrogenstate_inst)
+               soilbiogeochem_nitrogenflux_inst, soilbiogeochem_nitrogenstate_inst, c_products_inst)
           call t_stopf('EcosysDynPostDrainage')
        end if
 
@@ -1148,7 +1151,9 @@ contains
                   water_inst%waterstatebulk_inst, water_inst%waterdiagnosticbulk_inst, &
                   water_inst%wateratm2lndbulk_inst, canopystate_inst, soilbiogeochem_carbonflux_inst, &
                   frictionvel_inst, soil_water_retention_curve)
-
+             if(use_fates)then
+               call clm_fates%wrap_AtmosphericCarbonFluxes(nc,bounds_proc,soilbiogeochem_carbonflux_inst,c_products_inst)
+             endif
              ! TODO(wjs, 2016-04-01) I think this setFilters call should be replaced by a
              ! call to reweight_wrapup, if it's needed at all.
              call setFilters( bounds_clump, glc_behavior )
@@ -1304,9 +1309,13 @@ contains
     ! based on similar pgi compiler bugs that we have run into before). Also note that I
     ! don't have explicit bounds on the left-hand-side of this assignment: excluding these
     ! explicit bounds seemed to be needed to get around other compiler bugs.
-    allocate(net_carbon_exchange_grc(bounds_proc%begg:bounds_proc%endg))
-    net_carbon_exchange_grc = bgc_vegetation_inst%get_net_carbon_exchange_grc(bounds_proc)
 
+    allocate(net_carbon_exchange_grc(bounds_proc%begg:bounds_proc%endg))
+    if(use_fates)then
+       net_carbon_exchange_grc = soilbiogeochem_carbonflux_inst%fates_nbp_grc(bounds_proc%begg:bounds_proc%endg)
+    else
+       net_carbon_exchange_grc = bgc_vegetation_inst%get_net_carbon_exchange_grc(bounds_proc)
+    endif
     call lnd2atm(bounds_proc,                                            &
          atm2lnd_inst, surfalb_inst, temperature_inst, frictionvel_inst, &
          water_inst, &
