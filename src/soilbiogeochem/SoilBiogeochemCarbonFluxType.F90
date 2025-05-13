@@ -52,7 +52,13 @@ module SoilBiogeochemCarbonFluxType
      ! nitrif_denitrif
      real(r8), pointer :: phr_vr_col                                (:,:)   ! (gC/m3/s) potential hr (not N-limited) 
      real(r8), pointer :: fphr_col                                  (:,:)   ! fraction of potential heterotrophic respiration
-
+     !-----FATES compposite fluxes ----------!
+     real(r8), pointer :: fates_nee_col                                   (:)     ! (gC/m2/s) net ecosystem exchange when FATES is on
+     real(r8), pointer :: fates_nep_col                                   (:)     ! (gC/m2/s) net ecosystem productivity when FATES is on
+     real(r8), pointer :: fates_nbp_col                                   (:)     ! (gC/m2/s) net biome productivity when FATES is on  
+     real(r8), pointer :: fates_nbp_grc                                   (:)     ! (gC/m2/s) net biome productivity when FATES is on
+     
+     ! ----- Hetertrophic Respiration fluxes --------!
      real(r8), pointer :: hr_col                                    (:)     ! (gC/m2/s) total heterotrophic respiration
      real(r8), pointer :: michr_col                                 (:)     ! (gC/m2/s) microbial heterotrophic respiration: donor-pool based definition, so expect it to be zero with MIMICS; microbial decomposition is responsible for heterotrophic respiration of donor pools (litter and soil), but in the accounting we assign it to the donor pool for consistency with CENTURY
      real(r8), pointer :: cwdhr_col                                 (:)     ! (gC/m2/s) coarse woody debris heterotrophic respiration: donor-pool based definition
@@ -121,12 +127,14 @@ contains
      ! !LOCAL VARIABLES:
      integer           :: begp,endp            ! Begin and end patch
      integer           :: begc,endc            ! Begin and end column
+      integer           :: begg,endg
      integer           :: Ntrans,Ntrans_diag   ! N trans size for matrix solution
      !------------------------------------------------------------------------
 
      begp = bounds%begp; endp = bounds%endp
      begc = bounds%begc; endc = bounds%endc
-
+     begg = bounds%begg; endg = bounds%endg
+     
      allocate(this%t_scalar_col      (begc:endc,1:nlevdecomp_full)); this%t_scalar_col      (:,:) =spval
      allocate(this%w_scalar_col      (begc:endc,1:nlevdecomp_full)); this%w_scalar_col      (:,:) =spval
      allocate(this%o_scalar_col      (begc:endc,1:nlevdecomp_full)); this%o_scalar_col      (:,:) =spval
@@ -171,6 +179,12 @@ contains
 
      allocate(this%decomp_cpools_transport_tendency_col(begc:endc,1:nlevdecomp_full,1:ndecomp_pools))          
      this%decomp_cpools_transport_tendency_col(:,:,:)= nan
+      if(use_fates)then
+        allocate(this%fates_nee_col                (begc:endc)) ; this%fates_nee_col          (:) = nan
+        allocate(this%fates_nep_col                (begc:endc)) ; this%fates_nep_col          (:) = nan
+        allocate(this%fates_nbp_col                (begc:endc)) ; this%fates_nbp_col          (:) = nan
+        allocate(this%fates_nbp_grc                (begg:endg)) ; this%fates_nbp_grc          (:) = nan
+       endif
 
      allocate(this%hr_col                  (begc:endc)) ; this%hr_col                  (:) = nan
      allocate(this%michr_col               (begc:endc)) ; this%michr_col               (:) = nan
@@ -235,6 +249,7 @@ contains
      character(10)     :: active
      integer           :: begp,endp
      integer           :: begc,endc
+     integer           :: begg,endg
      character(24)     :: fieldname
      character(100)    :: longname
      real(r8), pointer :: data1dptr(:)   ! temp. pointer for slicing larger arrays
@@ -243,7 +258,8 @@ contains
 
      begp = bounds%begp; endp = bounds%endp
      begc = bounds%begc; endc = bounds%endc
-
+     begg = bounds%begg; endg = bounds%endg
+     
      if (nlevdecomp > 1) then
         vr_suffix = "_vr"
      else 
@@ -255,7 +271,20 @@ contains
      !-------------------------------
 
      ! add history fields for all CLAMP CN variables
+     if (use_fates)then
+        call hist_addfld1d (fname='FATES_NEE', units='gC/m^2/s', &
+             avgflag='A', long_name='FATES net ecosystem productivity', &
+             ptr_col=this%fates_nee_col)
 
+        call hist_addfld1d (fname='FATES_NEP', units='gC/m^2/s', &
+             avgflag='A', long_name='FATES net ecosystem productivity', &
+             ptr_col=this%fates_nep_col)
+
+        call hist_addfld1d (fname='FATES_NBP', units='gC/m^2/s', &
+             avgflag='A', long_name='FATES net biome productivity', &
+             ptr_col=this%fates_nbp_col)
+
+     endif    
      if (carbon_type == 'c12') then
 
         this%hr_col(begc:endc) = spval
@@ -306,7 +335,15 @@ contains
                 avgflag='A', long_name=longname, &
                 ptr_col=data2dptr, default='inactive')
         end do
+        
+        if(use_fates)then
+           this%fates_nee_col(begc:endc)             = spval
+           this%fates_nep_col(begc:endc)             = spval
+           this%fates_nbp_col(begc:endc)             = spval
+           this%fates_nbp_grc(begg:endg)             = spval
+         endif 
 
+           
         this%decomp_cascade_hr_col(begc:endc,:)             = spval
         this%decomp_cascade_hr_vr_col(begc:endc,:,:)        = spval
         this%decomp_cascade_ctransfer_col(begc:endc,:)      = spval
@@ -787,6 +824,11 @@ contains
 
     do fi = 1,num_column
        i = filter_column(fi)
+       if(use_fates)then
+          this%fates_nee_col(i)           = value_column
+          this%fates_nep_col(i)           = value_column
+          this%fates_nbp_col(i)           = value_column       
+       endif
        this%hr_col(i)            = value_column
        this%somc_fire_col(i)     = value_column  
        this%som_c_leached_col(i) = value_column
@@ -955,7 +997,7 @@ contains
             this%cwdhr_col(c) + &
             this%lithr_col(c) + &
             this%somhr_col(c)
-       
+
     end do
 
     ! Calculate ligninNratio
