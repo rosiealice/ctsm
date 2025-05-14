@@ -1123,7 +1123,8 @@ contains
                soilbiogeochem_carbonflux_inst, soilbiogeochem_carbonstate_inst, &
                c13_soilbiogeochem_carbonflux_inst, c13_soilbiogeochem_carbonstate_inst, &
                c14_soilbiogeochem_carbonflux_inst, c14_soilbiogeochem_carbonstate_inst, &
-               soilbiogeochem_nitrogenflux_inst, soilbiogeochem_nitrogenstate_inst, c_products_inst)
+               soilbiogeochem_nitrogenflux_inst, soilbiogeochem_nitrogenstate_inst, c_products_inst,&
+               clm_fates)
           call t_stopf('EcosysDynPostDrainage')
        end if
 
@@ -1152,7 +1153,7 @@ contains
                   water_inst%wateratm2lndbulk_inst, canopystate_inst, soilbiogeochem_carbonflux_inst, &
                   frictionvel_inst, soil_water_retention_curve)
              if(use_fates)then
-               call clm_fates%wrap_AtmosphericCarbonFluxes(nc,bounds_proc,soilbiogeochem_carbonflux_inst,c_products_inst)
+!               call clm_fates%wrap_AtmosphericCarbonFluxes(nc,bounds_proc,soilbiogeochem_carbonflux_inst,c_products_inst)
              endif
              ! TODO(wjs, 2016-04-01) I think this setFilters call should be replaced by a
              ! call to reweight_wrapup, if it's needed at all.
