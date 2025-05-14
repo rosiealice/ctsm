@@ -1,3 +1,4 @@
+
 module CLMFatesInterfaceMod
 
    ! -------------------------------------------------------------------------------------
@@ -2940,7 +2941,7 @@ module CLMFatesInterfaceMod
    ! NEP, NEE and NBP are outputs
    ! product loss, hr and fire are inputs. 
    associate(&
-        nep     => cnveg_carbonflux_inst%nep_col    , &
+        nep     => soilbiogeochem_carbonflux_inst%fates_nep_col    , &
         nbp     => soilbiogeochem_carbonflux_inst%fates_nbp_col    , &    
         product_closs => c_products_inst%product_loss_grc ,  &   ! Gridcell level product C loss from all pools. gC/m2/s
         hr     => soilbiogeochem_carbonflux_inst%hr_col) 
