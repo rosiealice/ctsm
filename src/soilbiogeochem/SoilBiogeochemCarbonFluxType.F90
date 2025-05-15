@@ -57,6 +57,7 @@ module SoilBiogeochemCarbonFluxType
      real(r8), pointer :: fates_nep_col                                   (:)     ! (gC/m2/s) net ecosystem productivity when FATES is on
      real(r8), pointer :: fates_nbp_col                                   (:)     ! (gC/m2/s) net biome productivity when FATES is on  
      real(r8), pointer :: fates_nbp_grc                                   (:)     ! (gC/m2/s) net biome productivity when FATES is on
+     real(r8), pointer :: fates_product_loss_grc                          (:)     ! (gC/m2/s) total loss from product pools for calcualtion of fates_nbp
      
      ! ----- Hetertrophic Respiration fluxes --------!
      real(r8), pointer :: hr_col                                    (:)     ! (gC/m2/s) total heterotrophic respiration
@@ -184,7 +185,8 @@ contains
         allocate(this%fates_nep_col                (begc:endc)) ; this%fates_nep_col          (:) = nan
         allocate(this%fates_nbp_col                (begc:endc)) ; this%fates_nbp_col          (:) = nan
         allocate(this%fates_nbp_grc                (begg:endg)) ; this%fates_nbp_grc          (:) = nan
-       endif
+        allocate(this%fates_product_loss_grc       (begg:endg)) ; this%fates_product_loss_grc (:) = nan
+     endif
 
      allocate(this%hr_col                  (begc:endc)) ; this%hr_col                  (:) = nan
      allocate(this%michr_col               (begc:endc)) ; this%michr_col               (:) = nan
@@ -283,7 +285,7 @@ contains
         call hist_addfld1d (fname='FATES_NBP', units='gC/m^2/s', &
              avgflag='A', long_name='FATES net biome productivity', &
              ptr_col=this%fates_nbp_col)
-
+        
      endif    
      if (carbon_type == 'c12') then
 
@@ -341,6 +343,7 @@ contains
            this%fates_nep_col(begc:endc)             = spval
            this%fates_nbp_col(begc:endc)             = spval
            this%fates_nbp_grc(begg:endg)             = spval
+           this%fates_product_loss_grc(begg:endg)    = spval
          endif 
 
            
@@ -827,7 +830,7 @@ contains
        if(use_fates)then
           this%fates_nee_col(i)           = value_column
           this%fates_nep_col(i)           = value_column
-          this%fates_nbp_col(i)           = value_column       
+          this%fates_nbp_col(i)           = value_column
        endif
        this%hr_col(i)            = value_column
        this%somc_fire_col(i)     = value_column  
@@ -838,7 +841,7 @@ contains
        this%michr_col(i)         = value_column
        this%soilc_change_col(i)  = value_column
     end do
-
+    
   end subroutine SetValues
 
   !-----------------------------------------------------------------------
