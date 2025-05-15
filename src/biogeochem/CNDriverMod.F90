@@ -860,6 +860,7 @@ contains
     end if
 
     if_bgc_vegp2: if(num_bgc_vegp>0)then
+
        call c_products_inst%UpdateProducts(bounds, &
             num_bgc_vegp, filter_bgc_vegp, &
             dwt_wood_product_gain_patch = cnveg_carbonflux_inst%dwt_wood_productc_gain_patch(begp:endp), &
@@ -903,11 +904,12 @@ contains
     if (use_c14) call c14_products_inst%ComputeProductSummaryVars(bounds)
     call n_products_inst%ComputeProductSummaryVars(bounds)
 
-
     call c_products_inst%ComputeSummaryVars(bounds)
     if (use_c13) call c13_products_inst%ComputeSummaryVars(bounds)
     if (use_c14) call c14_products_inst%ComputeSummaryVars(bounds)
     call n_products_inst%ComputeSummaryVars(bounds)
+    
+    soilbiogeochem_carbonflux_inst%fates_product_loss_grc(bounds%begg:bounds%endg)=c_products_inst%product_loss_grc(bounds%begg:bounds%endg)
     
     call t_stopf('CNWoodProducts')
        
