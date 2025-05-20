@@ -2922,7 +2922,7 @@ module CLMFatesInterfaceMod
  
 ! ======================================================================================
 
- subroutine wrap_atmosphericCarbonFluxes(this,bounds_clump,soilbiogeochem_carbonflux_inst,cnveg_carbonflux_inst,c_products_inst)
+ subroutine wrap_atmosphericCarbonFluxes(this,bounds_clump,soilbiogeochem_carbonflux_inst,cnveg_carbonflux_inst)
 
    ! summarize the high-level fluxes that integrate information from both
    ! FATES and outside-of-FATES decomposition and product decay code.
@@ -2933,33 +2933,32 @@ module CLMFatesInterfaceMod
    type(bounds_type),  intent(in)             :: bounds_clump
    class(hlm_fates_interface_type), intent(inout) :: this
    integer  :: nc   
-   type(soilbiogeochem_carbonflux_type), intent(in) :: soilbiogeochem_carbonflux_inst
-   type(cn_products_type)         , intent(inout) :: c_products_inst
-   type(cnveg_carbonflux_type)    , intent(inout) :: cnveg_carbonflux_inst
-   integer                                        :: g,s,c
+   type(soilbiogeochem_carbonflux_type), intent(in)    :: soilbiogeochem_carbonflux_inst
+   type(cnveg_carbonflux_type)         , intent(inout) :: cnveg_carbonflux_inst
+   integer          :: g,s,c
 
    ! NEP, NEE and NBP are outputs
    ! product loss, hr and fire are inputs. 
    associate(&
         nep     => soilbiogeochem_carbonflux_inst%fates_nep_col    , &
         nbp     => soilbiogeochem_carbonflux_inst%fates_nbp_col    , &    
-        product_closs => c_products_inst%product_loss_grc ,  &   ! Gridcell level product C loss from all pools. gC/m2/s
+        product_closs => soilbiogeochem_carbonflux_inst%fates_product_loss_grc ,  &
         hr     => soilbiogeochem_carbonflux_inst%hr_col) 
 
     nc = bounds_clump%clump_index
-     
+
     do s = 1, this%fates(nc)%nsites
        c = this%f2hmap(nc)%fcolumn(s)
        g = col%gridcell(c)    
-     
-       nep(c) = this%fates(nc)%bc_out(s)%gpp_site*g_per_kg &
-            - this%fates(nc)%bc_out(s)%ar_site*g_per_kg &
-            - hr(c)
+
+       ! Instantaneous site level NPP is calculate in FATES in AccumulateFluxes_ED
+       nep(c) = this%fates(nc)%bc_out(s)%npp_site - hr(c) 
+       ! hr should already by in g/m2/s 
 
        nbp(c) = nep(c) &
             - this%fates(nc)%bc_out(s)%grazing_closs_to_atm_si*g_per_kg &
-            - this%fates(nc)%bc_out(s)%fire_closs_to_atm_si*g_per_kg !&
- !           - product_closs(g)
+            - this%fates(nc)%bc_out(s)%fire_closs_to_atm_si*g_per_kg &
+           - product_closs(g)
 
     end do
 
