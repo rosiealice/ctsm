@@ -2957,12 +2957,17 @@ module CLMFatesInterfaceMod
        nep(c) = this%fates(nc)%bc_out(s)%npp_site - hr(c) 
        ! hr should already by in g/m2/s 
 
+       ! g/m2/s 
        nbp(c) = nep(c) &
             - this%fates(nc)%bc_out(s)%grazing_closs_to_atm_si*g_per_kg &
             - this%fates(nc)%bc_out(s)%fire_closs_to_atm_si*g_per_kg &
-           - product_closs(g)
-
+            - product_closs(g)
+       
+       ! Pass the carbon pools in FATES to be included inthe gridcell balance check. g/m2/s 
        fates_total_carbon(c) = this%fates(nc)%bc_out(s)%fates_total_carbon_site
+       ! Add the instantaneous amount of carbon in the accumulated NPP pool (which at this model timestep has not bee allocated to a FATES biomass pool but will be at the end of the day)
+       fates_total_carbon(c) =  fates_total_carbon(c) + this%fates(nc)%bc_out(s)%npp_acc_site
+       
        write(*,*) 'in fates utils',c,nep(c),nbp(c),fates_total_carbon(c) 
     end do
 
