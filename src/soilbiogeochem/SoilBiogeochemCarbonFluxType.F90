@@ -58,7 +58,6 @@ module SoilBiogeochemCarbonFluxType
      real(r8), pointer :: fates_nbp_col                                   (:)     ! (gC/m2/s) net biome productivity when FATES is on  
      real(r8), pointer :: fates_nbp_grc                                   (:)     ! (gC/m2/s) net biome productivity when FATES is on
      real(r8), pointer :: fates_product_loss_grc                          (:)     ! (gC/m2/s) total loss from product pools for calcualtion of fates_nbp
-     real(r8), pointer :: fates_total_carbon_col                          (:)     ! (gC/m2) total carbon in all FATES variables for HLM NBP balance check
      
      ! ----- Hetertrophic Respiration fluxes --------!
      real(r8), pointer :: hr_col                                    (:)     ! (gC/m2/s) total heterotrophic respiration
@@ -187,7 +186,6 @@ contains
         allocate(this%fates_nbp_col                (begc:endc)) ; this%fates_nbp_col          (:) = nan
         allocate(this%fates_nbp_grc                (begg:endg)) ; this%fates_nbp_grc          (:) = nan
         allocate(this%fates_product_loss_grc       (begg:endg)) ; this%fates_product_loss_grc (:) = nan
-        allocate(this%fates_total_carbon_col       (begg:endg)) ; this%fates_total_carbon_col (:) = nan
      endif
 
      allocate(this%hr_col                  (begc:endc)) ; this%hr_col                  (:) = nan
@@ -288,10 +286,6 @@ contains
              avgflag='A', long_name='FATES net biome productivity', &
              ptr_col=this%fates_nbp_col)
 
-        call hist_addfld1d (fname='FATES_TOTAL_CARBON', units='gC/m^2', &
-             avgflag='A', long_name='FATES total carbon stock (biomass + litter + seeds)', &
-             ptr_col=this%fates_total_carbon_col)
-        
      endif    
      if (carbon_type == 'c12') then
 
@@ -350,7 +344,6 @@ contains
            this%fates_nbp_col(begc:endc)             = spval
            this%fates_nbp_grc(begg:endg)             = spval
            this%fates_product_loss_grc(begg:endg)    = spval
-           this%fates_total_carbon_col(begc:endc)    = spval
          endif 
 
            
@@ -838,7 +831,6 @@ contains
           this%fates_nee_col(i)           = value_column
           this%fates_nep_col(i)           = value_column
           this%fates_nbp_col(i)           = value_column
-          this%fates_total_carbon_col(i)  = value_column
        endif
        this%hr_col(i)            = value_column
        this%somc_fire_col(i)     = value_column  

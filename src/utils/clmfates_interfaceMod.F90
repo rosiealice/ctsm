@@ -2922,7 +2922,7 @@ module CLMFatesInterfaceMod
  
 ! ======================================================================================
 
- subroutine wrap_atmosphericCarbonFluxes(this,bounds_clump,soilbiogeochem_carbonflux_inst,cnveg_carbonflux_inst)
+ subroutine wrap_atmosphericCarbonFluxes(this,bounds_clump,soilbiogeochem_carbonflux_inst,soilbiogeochem_carbonstate_inst)
 
    ! summarize the high-level fluxes that integrate information from both
    ! FATES and outside-of-FATES decomposition and product decay code.
@@ -2934,16 +2934,18 @@ module CLMFatesInterfaceMod
    class(hlm_fates_interface_type), intent(inout) :: this
    integer  :: nc   
    type(soilbiogeochem_carbonflux_type), intent(in)    :: soilbiogeochem_carbonflux_inst
-   type(cnveg_carbonflux_type)         , intent(inout) :: cnveg_carbonflux_inst
+   type(soilbiogeochem_carbonstate_type)         , intent(inout) :: soilbiogeochem_carbonstate_inst
    integer          :: g,s,c
-
+   real             :: fates_total_carbon
+   
    ! NEP, NEE and NBP are outputs
    ! product loss, hr and fire are inputs. 
    associate(&
         nep     => soilbiogeochem_carbonflux_inst%fates_nep_col    , &
         nbp     => soilbiogeochem_carbonflux_inst%fates_nbp_col    , &    
         product_closs => soilbiogeochem_carbonflux_inst%fates_product_loss_grc ,  &
-        hr     => soilbiogeochem_carbonflux_inst%hr_col) 
+        hr     => soilbiogeochem_carbonflux_inst%hr_col, &
+        fates_total_carbon => soilbiogeochem_carbonstate_inst%fates_total_carbon_col) 
 
     nc = bounds_clump%clump_index
 
@@ -2960,6 +2962,8 @@ module CLMFatesInterfaceMod
             - this%fates(nc)%bc_out(s)%fire_closs_to_atm_si*g_per_kg &
            - product_closs(g)
 
+       fates_total_carbon(c) = this%fates(nc)%bc_out(s)%fates_total_carbon_site
+       write(*,*) 'in fates utils',c,nep(c),nbp(c),fates_total_carbon(c) 
     end do
 
     call c2g( bounds = bounds_clump, &

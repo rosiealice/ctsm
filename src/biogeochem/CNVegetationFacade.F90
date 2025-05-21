@@ -1188,7 +1188,7 @@ contains
     end if
 
     if(use_fates_bgc)then
-      call clm_fates%wrap_AtmosphericCarbonFluxes(bounds,soilbiogeochem_carbonflux_inst,this%cnveg_carbonflux_inst,c_products_inst)
+      call clm_fates%wrap_AtmosphericCarbonFluxes(bounds,soilbiogeochem_carbonflux_inst,soilbiogeochem_carbonstate_inst)
     endif
 
     

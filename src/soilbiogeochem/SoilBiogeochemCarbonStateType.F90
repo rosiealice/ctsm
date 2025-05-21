@@ -53,8 +53,8 @@ module SoilBiogeochemCarbonStateType
      real(r8), pointer :: totc_col                            (:) ! (gC/m2) total column carbon, incl veg and cpool
      real(r8), pointer :: totecosysc_col                      (:) ! (gC/m2) total ecosystem carbon, incl veg but excl cpool 
      real(r8), pointer :: totc_grc                            (:) ! (gC/m2) total gridcell carbon
-
-     
+     real(r8), pointer :: fates_total_carbon_col              (:) ! (gC/m2) total carbon contain in FATES state variables (vegetation, seeds, litter) for gridcell balance check. 
+      
      ! Matrix-cn
      real(r8), pointer :: matrix_cap_decomp_cpools_col    (:,:)   ! (gC/m2) C capacity in decomposing (litter, cwd, soil) N pools in dimension (col,npools)
      real(r8), pointer :: matrix_cap_decomp_cpools_vr_col (:,:,:) ! (gC/m3) vertically-resolved C capacity in decomposing (litter, cwd, soil) pools in dimension(col,nlev,npools)
@@ -177,7 +177,10 @@ contains
     allocate(this%totc_col                 (begc:endc)) ; this%totc_col                 (:) = nan
     allocate(this%totecosysc_col           (begc:endc)) ; this%totecosysc_col           (:) = nan
     allocate(this%totc_grc                 (begg:endg)) ; this%totc_grc                 (:) = nan
-    
+    if(use_fates_bgc)then
+      allocate(this%fates_total_carbon_col   (begg:endg)) ; this%fates_total_carbon_col   (:) = nan
+    endif
+
     this%restart_file_spinup_state = huge(1)
 
   end subroutine InitAllocate
@@ -288,6 +291,12 @@ contains
             avgflag='A', long_name='total soil organic matter carbon', &
             ptr_col=this%totsomc_col)
 
+       if(use_fates_bgc)then
+          call hist_addfld1d (fname='FATES_TOTAL_CARBON', units='gC/m^2', &
+               avgflag='A', long_name='FATES total carbon stock (biomass + litter + seeds)', &
+               ptr_col=this%fates_total_carbon_col)
+       endif
+       
        if ( nlevdecomp_full > 1 ) then
           this%totlitc_1m_col(begc:endc) = spval
           call hist_addfld1d (fname='TOTLITC_1m', units='gC/m^2', &
@@ -1616,8 +1625,8 @@ contains
           c = filter_allc(fc)
        end if
        if(col%is_fates(c)) then
-          totvegc_col = 0._r8
-          ecovegc_col = 0._r8
+          totvegc_col = this%fates_total_carbon_col(c) 
+          ecovegc_col = this%fates_total_carbon_col(c)
        else
           do l = 1, ndecomp_pools
              if ( decomp_cascade_con%is_cwd(l) ) then
