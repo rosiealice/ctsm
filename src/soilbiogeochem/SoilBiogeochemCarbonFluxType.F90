@@ -6,7 +6,7 @@ module SoilBiogeochemCarbonFluxType
   use clm_varpar                         , only : ndecomp_cascade_transitions, ndecomp_pools, ndecomp_cascade_outtransitions
   use clm_varpar                         , only : nlevdecomp_full, nlevgrnd, nlevdecomp, nlevsoi, ndecomp_pools_vr, i_cwdl2
   use clm_varcon                         , only : spval, ispval, dzsoi_decomp
-  use clm_varctl                         , only : use_fates,use_cn
+  use clm_varctl                         , only : use_fates,use_fates_bgc,use_cn
   use pftconMod                          , only : pftcon
   use landunit_varcon                    , only : istsoil, istcrop, istdlak 
   use ch4varcon                          , only : allowlakeprod
@@ -58,6 +58,7 @@ module SoilBiogeochemCarbonFluxType
      real(r8), pointer :: fates_nbp_col                                   (:)     ! (gC/m2/s) net biome productivity when FATES is on  
      real(r8), pointer :: fates_nbp_grc                                   (:)     ! (gC/m2/s) net biome productivity when FATES is on
      real(r8), pointer :: fates_product_loss_grc                          (:)     ! (gC/m2/s) total loss from product pools for calcualtion of fates_nbp
+     real(r8), pointer :: fates_total_carbon_col                          (:)     ! (gC/m2) total carbon in all FATES variables for HLM NBP balance check
      
      ! ----- Hetertrophic Respiration fluxes --------!
      real(r8), pointer :: hr_col                                    (:)     ! (gC/m2/s) total heterotrophic respiration
@@ -180,12 +181,13 @@ contains
 
      allocate(this%decomp_cpools_transport_tendency_col(begc:endc,1:nlevdecomp_full,1:ndecomp_pools))          
      this%decomp_cpools_transport_tendency_col(:,:,:)= nan
-      if(use_fates)then
+      if(use_fates_bgc)then
         allocate(this%fates_nee_col                (begc:endc)) ; this%fates_nee_col          (:) = nan
         allocate(this%fates_nep_col                (begc:endc)) ; this%fates_nep_col          (:) = nan
         allocate(this%fates_nbp_col                (begc:endc)) ; this%fates_nbp_col          (:) = nan
         allocate(this%fates_nbp_grc                (begg:endg)) ; this%fates_nbp_grc          (:) = nan
         allocate(this%fates_product_loss_grc       (begg:endg)) ; this%fates_product_loss_grc (:) = nan
+        allocate(this%fates_total_carbon_col       (begg:endg)) ; this%fates_total_carbon_col (:) = nan
      endif
 
      allocate(this%hr_col                  (begc:endc)) ; this%hr_col                  (:) = nan
@@ -273,7 +275,7 @@ contains
      !-------------------------------
 
      ! add history fields for all CLAMP CN variables
-     if (use_fates)then
+     if (use_fates_bgc)then
         call hist_addfld1d (fname='FATES_NEE', units='gC/m^2/s', &
              avgflag='A', long_name='FATES net ecosystem productivity', &
              ptr_col=this%fates_nee_col)
@@ -285,6 +287,10 @@ contains
         call hist_addfld1d (fname='FATES_NBP', units='gC/m^2/s', &
              avgflag='A', long_name='FATES net biome productivity', &
              ptr_col=this%fates_nbp_col)
+
+        call hist_addfld1d (fname='FATES_TOTAL_CARBON', units='gC/m^2', &
+             avgflag='A', long_name='FATES total carbon stock (biomass + litter + seeds)', &
+             ptr_col=this%fates_total_carbon_col)
         
      endif    
      if (carbon_type == 'c12') then
@@ -338,12 +344,13 @@ contains
                 ptr_col=data2dptr, default='inactive')
         end do
         
-        if(use_fates)then
+        if(use_fates_bgc)then
            this%fates_nee_col(begc:endc)             = spval
            this%fates_nep_col(begc:endc)             = spval
            this%fates_nbp_col(begc:endc)             = spval
            this%fates_nbp_grc(begg:endg)             = spval
            this%fates_product_loss_grc(begg:endg)    = spval
+           this%fates_total_carbon_col(begc:endc)    = spval
          endif 
 
            
@@ -827,10 +834,11 @@ contains
 
     do fi = 1,num_column
        i = filter_column(fi)
-       if(use_fates)then
+       if(use_fates_bgc)then
           this%fates_nee_col(i)           = value_column
           this%fates_nep_col(i)           = value_column
           this%fates_nbp_col(i)           = value_column
+          this%fates_total_carbon_col(i)  = value_column
        endif
        this%hr_col(i)            = value_column
        this%somc_fire_col(i)     = value_column  
