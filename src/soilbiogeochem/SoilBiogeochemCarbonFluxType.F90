@@ -53,10 +53,13 @@ module SoilBiogeochemCarbonFluxType
      real(r8), pointer :: phr_vr_col                                (:,:)   ! (gC/m3/s) potential hr (not N-limited) 
      real(r8), pointer :: fphr_col                                  (:,:)   ! fraction of potential heterotrophic respiration
      !-----FATES compposite fluxes ----------!
+     real(r8), pointer :: fates_npp_col                                   (:)     ! (gC/m2/s) net ecosystem exchange when FATES is on
      real(r8), pointer :: fates_nee_col                                   (:)     ! (gC/m2/s) net ecosystem exchange when FATES is on
      real(r8), pointer :: fates_nep_col                                   (:)     ! (gC/m2/s) net ecosystem productivity when FATES is on
-     real(r8), pointer :: fates_nbp_col                                   (:)     ! (gC/m2/s) net biome productivity when FATES is on  
-     real(r8), pointer :: fates_nbp_grc                                   (:)     ! (gC/m2/s) net biome productivity when FATES is on
+
+     real(r8), pointer :: fates_nbp_col                                   (:)     ! (gC/m2/s) net biome productivity when FATES is on  column level
+     real(r8), pointer :: fates_nbp_grc                                   (:)     ! (gC/m2/s) net biome productivity when FATES is on  gridcell level
+     real(r8), pointer :: fates_fire_grazing_col                                       (:)     ! (gC/m2/s) fire plus grazing fluxes to the atmosphere (happen the -next- day as fire & grazing are calcualted at midnight. 
      real(r8), pointer :: fates_product_loss_grc                          (:)     ! (gC/m2/s) total loss from product pools for calcualtion of fates_nbp
      
      ! ----- Hetertrophic Respiration fluxes --------!
@@ -181,10 +184,12 @@ contains
      allocate(this%decomp_cpools_transport_tendency_col(begc:endc,1:nlevdecomp_full,1:ndecomp_pools))          
      this%decomp_cpools_transport_tendency_col(:,:,:)= nan
       if(use_fates_bgc)then
+        allocate(this%fates_npp_col                (begc:endc)) ; this%fates_npp_col          (:) = nan
         allocate(this%fates_nee_col                (begc:endc)) ; this%fates_nee_col          (:) = nan
         allocate(this%fates_nep_col                (begc:endc)) ; this%fates_nep_col          (:) = nan
         allocate(this%fates_nbp_col                (begc:endc)) ; this%fates_nbp_col          (:) = nan
         allocate(this%fates_nbp_grc                (begg:endg)) ; this%fates_nbp_grc          (:) = nan
+        allocate(this%fates_fire_grazing_col       (begc:endc)) ; this%fates_fire_grazing_col (:) = nan
         allocate(this%fates_product_loss_grc       (begg:endg)) ; this%fates_product_loss_grc (:) = nan
      endif
 
@@ -286,6 +291,9 @@ contains
              avgflag='A', long_name='FATES net biome productivity', &
              ptr_col=this%fates_nbp_col)
 
+        call hist_addfld1d (fname='FATES_FIRE_GRAZING', units='gC/m^2/s', &
+             avgflag='A', long_name='FATES fire and grazing fluxes (NBP-NEP) ', &
+             ptr_col=this%fates_fire_grazing_col)
      endif    
      if (carbon_type == 'c12') then
 
@@ -339,9 +347,11 @@ contains
         end do
         
         if(use_fates_bgc)then
+	   this%fates_npp_col(begc:endc)             = spval
            this%fates_nee_col(begc:endc)             = spval
            this%fates_nep_col(begc:endc)             = spval
            this%fates_nbp_col(begc:endc)             = spval
+           this%fates_fire_grazing_col(begc:endc)    = spval
            this%fates_nbp_grc(begg:endg)             = spval
            this%fates_product_loss_grc(begg:endg)    = spval
          endif 
@@ -828,9 +838,11 @@ contains
     do fi = 1,num_column
        i = filter_column(fi)
        if(use_fates_bgc)then
+          this%fates_npp_col(i)           = value_column
           this%fates_nee_col(i)           = value_column
           this%fates_nep_col(i)           = value_column
           this%fates_nbp_col(i)           = value_column
+          this%fates_fire_grazing_col(i)           = value_column
        endif
        this%hr_col(i)            = value_column
        this%somc_fire_col(i)     = value_column  
@@ -840,6 +852,7 @@ contains
        this%cwdhr_col(i)         = value_column
        this%michr_col(i)         = value_column
        this%soilc_change_col(i)  = value_column
+
     end do
     
   end subroutine SetValues
@@ -869,6 +882,7 @@ contains
     real(r8), intent(in), optional :: soilbiogeochem_cwdn_col(bounds%begc:)
     real(r8), intent(in), optional :: soilbiogeochem_decomp_cascade_ctransfer_col(bounds%begc:,1:)
 
+    
     real(r8), intent(in), optional :: leafc_to_litter_patch(:)
     real(r8), intent(in), optional :: frootc_to_litter_patch(:)
     !
@@ -1000,7 +1014,7 @@ contains
             this%cwdhr_col(c) + &
             this%lithr_col(c) + &
             this%somhr_col(c)
-
+       
     end do
 
     ! Calculate ligninNratio
@@ -1052,13 +1066,26 @@ contains
                   max(1.0e-3_r8, leafc_to_litter_col(c) + &
                   frootc_to_litter_col(c) + &
                   soilbiogeochem_decomp_cascade_ctransfer_col(c,i_cwdl2))
-          !else
-             ! For FATES:
-             ! this array is currently updated here:
-             ! clmfates_interfaceMod.F90:wrap_update_hlmfates_dyn()
+           else
+             ! fates does not work with MIMICS yet! 
           end if
        end do
     end if if_mimics
+
+
+    do fc = 1,num_bgc_soilc
+       c = filter_bgc_soilc(fc)
+
+       ! For FATES, we update the coposite flux pools here with the infomationwe                            
+       ! recevied from FATES on column level NPP and grazing/fire fluxes.
+       if(col%is_fates(c)) then
+         ! These are all gc/,2/s and instantaneous.                                                       
+         this%fates_nep_col(c) = this%fates_npp_col(c) - this%hr_col(c)
+         this%fates_nbp_col(c) = this%fates_nep_col(c) - this%fates_fire_grazing_col(c) !- product_loss(c)
+         ! need to take off product pools
+       end if
+    end do
+
 
   end subroutine Summary
 

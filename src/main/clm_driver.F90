@@ -1045,6 +1045,7 @@ contains
           call t_stopf('ecosysdyn')
        end if
 
+       
        ! Prescribed biogeography - prescribed canopy structure, some prognostic carbon fluxes
 
        if (((.not. use_cn) .and. (.not. use_fates) .and. (doalb))) then
@@ -1312,7 +1313,7 @@ contains
     ! explicit bounds seemed to be needed to get around other compiler bugs.
 
     allocate(net_carbon_exchange_grc(bounds_proc%begg:bounds_proc%endg))
-    if(use_fates)then
+    if(use_fates_bgc)then
        net_carbon_exchange_grc = soilbiogeochem_carbonflux_inst%fates_nbp_grc(bounds_proc%begg:bounds_proc%endg)
     else
        net_carbon_exchange_grc = bgc_vegetation_inst%get_net_carbon_exchange_grc(bounds_proc)
