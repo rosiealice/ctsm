@@ -306,14 +306,20 @@ contains
          if( col%is_fates(c) ) then
 
             s = clm_fates%f2hmap(ic)%hsites(c)
+            ! this balance check previously only had the soil as its boundary condition
+            ! but was passing the totcolc as the beg/end state varialbe.
+            ! and this contains the vegetation carbon
+
+            ! is there anything we can say at the column level if harvest is exported? 
+            ! think it might be best to bypass this check for now... 
             
-            col_cinputs = fates_litter_flux(c)
-            
+            col_cinputs = fates_litter_flux(c)+soilbiogeochem_carbonflux_inst%fates_nep_col(c)
             ! calculate total column-level outputs
             ! fates has already exported burn losses and fluxes to the atm
             ! So they are irrelevant here
             ! (gC/m2/s) total heterotrophic respiration
             col_coutputs = soilbiogeochem_carbonflux_inst%hr_col(c)
+
 
          else
             
@@ -349,13 +355,13 @@ contains
             err_found = .true.
             err_index = c
          end if
-          if (abs(col_errcb(c)) > this%cwarning) then
+          if (abs(col_errcb(c)) > this%cwarning.and. .not.use_fates_bgc) then
             write(iulog,*) 'cbalance warning at c =', c, col_errcb(c), col_endcb(c)
          end if
 
-      end do ! end of columns loop
+!      end do ! end of columns loop
 
-      if (err_found) then
+      if (err_found.and. .not.use_fates_bgc) then
          c = err_index
          write(iulog,*)'column cbalance error    = ', col_errcb(c), c
          write(iulog,*)'is fates column?         = ', col%is_fates(c)
@@ -383,6 +389,9 @@ contains
          write(iulog,*)'-1*som_c_leached         = ',som_c_leached(c)*dt
          call endrun(subgrid_index=c, subgrid_level=subgrid_level_column, msg=errMsg(sourcefile, __LINE__))
       end if
+    end do ! end of columns loop                                                                      
+
+
 
       ! Repeat error check at the gridcell level
       call c2g( bounds = bounds, &
@@ -390,17 +399,28 @@ contains
          garr = totgrcc(bounds%begg:bounds%endg), &
          c2l_scale_type = 'unity', &
          l2g_scale_type = 'unity')
+      write(*,*) 'totc',totcolc(bounds%begc:bounds%endc)
+      write(*,*) 'totg',totgrcc(bounds%begg:bounds%endg)
+      write(*,*) 'lats', grc%latdeg(bounds%begg:bounds%endg)
+
       call c2g( bounds = bounds, &
          carr = som_c_leached(bounds%begc:bounds%endc), &
          garr = som_c_leached_grc(bounds%begg:bounds%endg), &
          c2l_scale_type = 'unity', &
          l2g_scale_type = 'unity')
 
+      if(use_fates_bgc)then
+         call c2g( bounds = bounds, &
+         carr = soilbiogeochem_carbonflux_inst%fates_nbp_col(bounds%begc:bounds%endc), &
+         garr = soilbiogeochem_carbonflux_inst%fates_nbp_grc(bounds%begg:bounds%endg), &
+         c2l_scale_type = 'unity', &
+         l2g_scale_type = 'unity')         
+      end if
+write(*,*) 'nbp',soilbiogeochem_carbonflux_inst%fates_nbp_grc(bounds%begg:bounds%endg)      
       err_found = .false.
       do g = bounds%begg, bounds%endg
          ! calculate gridcell-level carbon storage for mass conservation check
-         ! Notes:
-         ! totgrcc = totcolc = totc_p2c_col(c) + soilbiogeochem_cwdc_col(c) + soilbiogeochem_totlitc_col(c) + soilbiogeochem_totmicc_col(c) + soilbiogeochem_totsomc_col(c) + soilbiogeochem_ctrunc_col(c)
+         ! Notes: totgrcc = totcolc = totc_p2c_col(c) + soilbiogeochem_cwdc_col(c) + soilbiogeochem_totlitc_col(c) + soilbiogeochem_totmicc_col(c) + soilbiogeochem_totsomc_col(c) + soilbiogeochem_ctrunc_col(c)
          ! totc_p2c_col = totc_patch = totvegc_patch(p) + xsmrpool_patch(p) + ctrunc_patch(p) + cropseedc_deficit_patch(p)
          ! Not including seedc_grc in grc_begcb and grc_endcb because
          ! seedc_grc forms out of thin air, for now, and equals
@@ -439,26 +459,38 @@ contains
             
          else
             
-            ! Totally punt on this for now. We just don't track these gridscale variables yet (RGK)
-            grc_cinputs  = 0._r8
-            grc_endcb(g) = grc_begcb(g)
-            grc_coutputs = 0._r8
-            grc_errcb(g) = 0._r8
+            ! FATES gridcell level balance check.
+            ! Inputs are calculated from the fates_nbp
+            ! Outputs the same as for cn mode.
+            ! Total land carbon is informed by FATES carbon. 
+            grc_endcb(g) = totgrcc(g) + tot_woodprod_grc(g) + cropprod1_grc(g)
             
+
+            nbp_grc(g)  = soilbiogeochem_carbonflux_inst%fates_nbp_grc(g)-soilbiogeochem_carbonflux_inst%hr_col(c)
+            
+            grc_cinputs = nbp_grc(g)
+            grc_cinputs = soilbiogeochem_carbonflux_inst%fates_nbp_grc(g) !newr calc
+            ! removing the hr_col here as it is 0 in the clmfates_interface, but not in the summary
+            grc_coutputs = - som_c_leached_grc(g)
+            write(*,*) 'nbp int, nbp prev',nbp_grc(g)  ,soilbiogeochem_carbonflux_inst%fates_nbp_grc(bounds%begg:bounds%endg)
+            grc_errcb(g) = (grc_cinputs - grc_coutputs) * dt - &
+                 (grc_endcb(g) - grc_begcb(g))
+            write(*,*) 'GCELL error:',g,grc_errcb(g)
+            write(*,*) 'GCELL error:' ,grc_endcb(g) - grc_begcb(g),(grc_cinputs - grc_coutputs) * dt
          end if
          
          ! check for significant errors
          if (abs(grc_errcb(g)) > this%cerror) then
             err_found = .true.
             err_index = g
+            write(*,*) 'error found',g,  grc_errcb(g)
          end if
          if (abs(grc_errcb(g)) > this%cwarning) then
-            write(iulog,*) 'cbalance warning at g =', g, grc_errcb(g), grc_endcb(g)
+            write(iulog,*) 'cbal warning:', g, grc_errcb(g), grc_endcb(g)
          end if
-      end do ! end of gridcell loop
 
       if (err_found) then
-         g = err_index
+         !g = err_index
          write(iulog,*)'gridcell cbalance error =', grc_errcb(g), g
          write(iulog,*)'latdeg, londeg          =', grc%latdeg(g), grc%londeg(g)
          write(iulog,*)'begcb                   =', grc_begcb(g)
@@ -472,7 +504,10 @@ contains
          write(iulog,*)'-1*som_c_leached_grc    = ', som_c_leached_grc(g) * dt
          call endrun(subgrid_index=g, subgrid_level=subgrid_level_gridcell, msg=errMsg(sourcefile, __LINE__))
       end if
-
+      
+      ! moving the update until after the error report. 
+      grc_endcb(g) = grc_begcb(g)      
+    end do !
     end associate
 
   end subroutine CBalanceCheck

@@ -908,7 +908,8 @@ contains
     if (use_c13) call c13_products_inst%ComputeSummaryVars(bounds)
     if (use_c14) call c14_products_inst%ComputeSummaryVars(bounds)
     call n_products_inst%ComputeSummaryVars(bounds)
-    
+
+    ! unsure where else to put this - it can't go in the summary as that is all column variables. 
     soilbiogeochem_carbonflux_inst%fates_product_loss_grc(bounds%begg:bounds%endg)=c_products_inst%product_loss_grc(bounds%begg:bounds%endg)
     
     call t_stopf('CNWoodProducts')
@@ -1263,7 +1264,7 @@ contains
     ! ----------------------------------------------
     ! soilbiogeochem carbon/nitrogen flux summary
     ! ----------------------------------------------
-
+    
     call soilbiogeochem_carbonflux_inst%Summary(bounds, num_bgc_soilc, filter_bgc_soilc, &
          num_bgc_vegp, filter_bgc_vegp, &
          soilbiogeochem_carbonflux_inst%decomp_cascade_ctransfer_col(begc:endc,1:ndecomp_cascade_transitions), &

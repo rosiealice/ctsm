@@ -913,7 +913,7 @@ contains
          garr = soilbiogeochem_carbonstate_inst%totc_grc(bounds%begg:bounds%endg), &
          c2l_scale_type = 'unity', &
          l2g_scale_type = 'unity')
-    
+
     ! total gridcell nitrogen (TOTGRIDCELLN)
     call c2g( bounds = bounds, &
          carr = soilbiogeochem_nitrogenstate_inst%totn_col(bounds%begc:bounds%endc), &
@@ -1144,6 +1144,10 @@ contains
          c14_soilbiogeochem_carbonstate_inst,soilbiogeochem_nitrogenstate_inst)
     call t_stopf('SoilBiogeochemPrecisionControl')
 
+    if(use_fates_bgc)then
+      call clm_fates%wrap_AtmosphericCarbonFluxes(bounds,soilbiogeochem_carbonflux_inst,soilbiogeochem_carbonstate_inst)
+    endif
+    
     ! Call to all CN summary routines
     call CNDriverSummarizeStates(bounds, &
          num_allc, filter_allc, &
@@ -1186,10 +1190,6 @@ contains
                crop_inst, this%cnveg_carbonstate_inst, canopystate_inst)
        end if
     end if
-
-    if(use_fates_bgc)then
-      call clm_fates%wrap_AtmosphericCarbonFluxes(bounds,soilbiogeochem_carbonflux_inst,soilbiogeochem_carbonstate_inst)
-    endif
 
     
   end subroutine EcosystemDynamicsPostDrainage
