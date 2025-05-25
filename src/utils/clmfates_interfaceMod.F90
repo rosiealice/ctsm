@@ -2936,15 +2936,17 @@ module CLMFatesInterfaceMod
    type(soilbiogeochem_carbonflux_type), intent(in)    :: soilbiogeochem_carbonflux_inst
    type(soilbiogeochem_carbonstate_type)         , intent(inout) :: soilbiogeochem_carbonstate_inst
    integer          :: g,s,c
-   real             :: fates_total_carbon
    
-   ! NEP, NEE and NBP are outputs
-   ! product loss, hr and fire are inputs. 
+   ! NPP,  grazing and fire and total carbon are the outputs from FATES that we pass to the HLM here
+   ! The composite fluxes are calculated using the HR and Product pools flues from the HLM in the
+   ! summary routines (which happen later).
+   ! Total carbon is needed for gridcell balance check purposes. 
+   ! All  fluxes here are in
+   
    associate(&
-        nep     => soilbiogeochem_carbonflux_inst%fates_nep_col    , &
-        nbp     => soilbiogeochem_carbonflux_inst%fates_nbp_col    , &    
+        fates_npp     => soilbiogeochem_carbonflux_inst%fates_npp_col    , &
+        fire_grazing     => soilbiogeochem_carbonflux_inst%fates_fire_grazing_col    , &    
         product_closs => soilbiogeochem_carbonflux_inst%fates_product_loss_grc ,  &
-        hr     => soilbiogeochem_carbonflux_inst%hr_col, &
         fates_total_carbon => soilbiogeochem_carbonstate_inst%fates_total_carbon_col) 
 
     nc = bounds_clump%clump_index
@@ -2954,21 +2956,21 @@ module CLMFatesInterfaceMod
        g = col%gridcell(c)    
 
        ! Instantaneous site level NPP is calculate in FATES in AccumulateFluxes_ED
-       nep(c) = this%fates(nc)%bc_out(s)%npp_site - hr(c) 
-       ! hr should already by in g/m2/s 
+       ! NEP, NBP are calculated in the summary after hr_col is determineds.
+       fates_npp(c) = this%fates(nc)%bc_out(s)%npp_site
 
-       ! g/m2/s 
-       nbp(c) = nep(c) &
-            - this%fates(nc)%bc_out(s)%grazing_closs_to_atm_si*g_per_kg &
-            - this%fates(nc)%bc_out(s)%fire_closs_to_atm_si*g_per_kg &
-            - product_closs(g)
-       
-       ! Pass the carbon pools in FATES to be included inthe gridcell balance check. g/m2/s 
-       fates_total_carbon(c) = this%fates(nc)%bc_out(s)%fates_total_carbon_site
-       ! Add the instantaneous amount of carbon in the accumulated NPP pool (which at this model timestep has not bee allocated to a FATES biomass pool but will be at the end of the day)
+       ! Convert yesteday's dribbled fluxes from fire and grazing from kgC/m2/s to g/m2/s 
+       fire_grazing(c) = this%fates(nc)%bc_out(s)%grazing_closs_to_atm_si*g_per_kg &
+            + this%fates(nc)%bc_out(s)%fire_closs_to_atm_si*g_per_kg 
+
+       ! Total carbon in all FATES-side pools (biomass, litter & seeds). 
+       fates_total_carbon(c) = this%fates(nc)%bc_out(s)%fates_total_carbon_site ! gC/m2
+
+       ! Add the instantaneous amount of carbon in the accumulated NPP pool, which at this
+       ! model timestep has not been allocated to a FATES biomass pool
+       ! (but will be at the end of the day)
        fates_total_carbon(c) =  fates_total_carbon(c) + this%fates(nc)%bc_out(s)%npp_acc_site
-       
-       write(*,*) 'in fates utils',c,nep(c),nbp(c),fates_total_carbon(c) 
+
     end do
 
     call c2g( bounds = bounds_clump, &
@@ -2976,7 +2978,6 @@ module CLMFatesInterfaceMod
             garr = soilbiogeochem_carbonflux_inst%fates_nbp_grc(bounds_clump%begg:bounds_clump%endg), &
             c2l_scale_type = 'unity', &
             l2g_scale_type = 'unity')
-
 
     end associate
     return
