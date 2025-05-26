@@ -1,5 +1,4 @@
 module SoilBiogeochemCarbonFluxType
-  1;95;0c
 
   use shr_kind_mod                       , only : r8 => shr_kind_r8
   use shr_infnan_mod                     , only : nan => shr_infnan_nan, assignment(=)
@@ -62,7 +61,8 @@ module SoilBiogeochemCarbonFluxType
      real(r8), pointer :: fates_nbp_grc                                   (:)     ! (gC/m2/s) net biome productivity when FATES is on  gridcell level
      real(r8), pointer :: fates_fire_grazing_col                                       (:)     ! (gC/m2/s) fire plus grazing fluxes to the atmosphere (happen the -next- day as fire & grazing are calcualted at midnight. 
      real(r8), pointer :: fates_product_loss_grc                          (:)     ! (gC/m2/s) total loss from product pools for calcualtion of fates_nbp
-     
+          real(r8), pointer :: fates_unreleased_cfluxes_col        (:)     ! (gC/m2) holding variable to add the amount of carbon that -will- be released over the next day as the result of fates dynamics. Includes fire, grazing and litter fluxes.
+ 
      ! ----- Hetertrophic Respiration fluxes --------!
      real(r8), pointer :: hr_col                                    (:)     ! (gC/m2/s) total heterotrophic respiration
      real(r8), pointer :: michr_col                                 (:)     ! (gC/m2/s) microbial heterotrophic respiration: donor-pool based definition, so expect it to be zero with MIMICS; microbial decomposition is responsible for heterotrophic respiration of donor pools (litter and soil), but in the accounting we assign it to the donor pool for consistency with CENTURY
@@ -192,6 +192,7 @@ contains
         allocate(this%fates_nbp_grc                (begg:endg)) ; this%fates_nbp_grc          (:) = nan
         allocate(this%fates_fire_grazing_col       (begc:endc)) ; this%fates_fire_grazing_col (:) = nan
         allocate(this%fates_product_loss_grc       (begg:endg)) ; this%fates_product_loss_grc (:) = nan
+        allocate(this%fates_unreleased_cfluxes_col(begc:endc))  ; this%fates_unreleased_cfluxes_col(:) = nan
      endif
 
      allocate(this%hr_col                  (begc:endc)) ; this%hr_col                  (:) = nan
@@ -726,6 +727,7 @@ contains
           num_special_col = num_special_col + 1
           special_col(num_special_col) = c
        end if
+       this%fates_unreleased_cfluxes_col(c) = 0._r8
     end do
 
     ! initialize fields for special filters
@@ -759,6 +761,12 @@ contains
          long_name='', units='', &
          interpinic_flag='interp', readvar=readvar, data=this%litr_lig_c_to_n_col)
 
+    if(use_fates_bgc)then
+       call restartvar(ncid=ncid, flag=flag, varname='fates_unreleased_cfluxes', xtype=ncd_double,  &
+         dim1name='column', &
+         long_name='C fluxes that FATES has generated but not yet released to the atmosphere', unit s='gC/m2', &
+         interpinic_flag='interp', readvar=readvar, data=this%fates_unreleased_cfluxes_col)
+    end if
 
     
   end subroutine Restart
@@ -791,6 +799,7 @@ contains
              this%decomp_cascade_ctransfer_vr_col(i,j,l) = value_column
              this%pathfrac_decomp_cascade_col(i,j,l)     = value_column
              this%rf_decomp_cascade_col(i,j,l)           = value_column
+             this%fates_unreleased_cfluxes_col(i)        = value_column
           end do
        end do
     end do

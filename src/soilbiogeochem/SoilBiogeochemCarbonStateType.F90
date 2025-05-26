@@ -54,7 +54,6 @@ module SoilBiogeochemCarbonStateType
      real(r8), pointer :: totecosysc_col                      (:) ! (gC/m2) total ecosystem carbon, incl veg but excl cpool 
      real(r8), pointer :: totc_grc                            (:) ! (gC/m2) total gridcell carbon
      real(r8), pointer :: fates_total_carbon_col              (:) ! (gC/m2) total carbon contain in FATES state variables (vegetation, seeds, litter) for gridcell balance check. 
-     real(r8), pointer :: fates_unreleased_cfluxes_col        (:)     ! (gC/m2) holding variable to add the amount of carbon that -will- be released over the next day as the result of fates dynamics. Includes fire, grazing and litter fluxes.
 
      ! Matrix-cn
      real(r8), pointer :: matrix_cap_decomp_cpools_col    (:,:)   ! (gC/m2) C capacity in decomposing (litter, cwd, soil) N pools in dimension (col,npools)
@@ -180,7 +179,6 @@ contains
     allocate(this%totc_grc                 (begg:endg)) ; this%totc_grc                 (:) = nan
     if(use_fates_bgc)then
       allocate(this%fates_total_carbon_col   (begc:endc)) ; this%fates_total_carbon_col   (:) = nan
-      allocate(this%fates_unreleased_cfluxes_col(begc:endc)); this%fates_unreleased_cfluxes_col(:) = nan
    endif
 
     this%restart_file_spinup_state = huge(1)
@@ -696,6 +694,9 @@ contains
 
           this%totc_col(c)       = 0._r8
           this%totecosysc_col(c) = 0._r8
+          if(use_fates_bgc)then
+             this%fates_total_carbon_col(c) = 0._r8
+          endif
        end if
        
     end do
@@ -913,10 +914,6 @@ contains
        end if
        
     if(use_fates_bgc)then
-    call restartvar(ncid=ncid, flag=flag, varname='fates_unreleased_cfluxes', xtype=ncd_double,  &
-         dim1name='column', &
-         long_name='C fluxes that FATES has generated but not yet released to the atmosphere', units='gC/m2', &
-         interpinic_flag='interp', readvar=readvar, data=this%fates_unreleased_cfluxes_col)
 
     call restartvar(ncid=ncid, flag=flag, varname='fates_total_carbon', xtype=ncd_double,  &
          dim1name='column', &
@@ -1357,7 +1354,6 @@ contains
 
        else
            this%fates_total_carbon_col(i)       = value_column          
-           this%fates_unreleased_cfluxes_col(i)       = value_column
        end if
        this%ctrunc_col(i)     = value_column
        this%totmicc_col(i)    = value_column
@@ -1672,11 +1668,6 @@ contains
             this%ctrunc_col(c)  + &
             totvegc_col
 
-! Each model timestep we remove the fluxes of fire/litter/grazing that happened in this timestep from the unreleased fluxes holding balloon.                                        
-         this%fates_unreleased_cfluxes_col(c) = thus%fates_unreleased_cfluxes_col(c) - (this%fates_fire_grazing_col(c) - fates_litter_flux(c)) * 1800._r8 !change this when it is working! 
-
-         write(*,*) 'unrelf update',c,this%fates_unreleased_cfluxes(c),this%fates_fire_grazing\
-_col(c)
 
     end do
 
