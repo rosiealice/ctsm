@@ -399,9 +399,7 @@ contains
          garr = totgrcc(bounds%begg:bounds%endg), &
          c2l_scale_type = 'unity', &
          l2g_scale_type = 'unity')
-      write(*,*) 'totc',totcolc(bounds%begc:bounds%endc)
       write(*,*) 'totg',totgrcc(bounds%begg:bounds%endg)
-      write(*,*) 'lats', grc%latdeg(bounds%begg:bounds%endg)
 
       call c2g( bounds = bounds, &
          carr = som_c_leached(bounds%begc:bounds%endc), &
@@ -416,7 +414,7 @@ contains
          c2l_scale_type = 'unity', &
          l2g_scale_type = 'unity')         
       end if
-write(*,*) 'nbp',soilbiogeochem_carbonflux_inst%fates_nbp_grc(bounds%begg:bounds%endg)      
+
       err_found = .false.
       do g = bounds%begg, bounds%endg
          ! calculate gridcell-level carbon storage for mass conservation check
@@ -472,7 +470,7 @@ write(*,*) 'nbp',soilbiogeochem_carbonflux_inst%fates_nbp_grc(bounds%begg:bounds
             grc_cinputs = soilbiogeochem_carbonflux_inst%fates_nbp_grc(g) !newr calc
             ! removing the hr_col here as it is 0 in the clmfates_interface, but not in the summary
             grc_coutputs = - som_c_leached_grc(g)
-            write(*,*) 'nbp int, nbp prev',nbp_grc(g)  ,soilbiogeochem_carbonflux_inst%fates_nbp_grc(bounds%begg:bounds%endg)
+
             grc_errcb(g) = (grc_cinputs - grc_coutputs) * dt - &
                  (grc_endcb(g) - grc_begcb(g))
             write(*,*) 'GCELL error:',g,grc_errcb(g)
