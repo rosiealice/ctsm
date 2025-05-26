@@ -1,4 +1,5 @@
 module SoilBiogeochemCarbonFluxType
+  1;95;0c
 
   use shr_kind_mod                       , only : r8 => shr_kind_r8
   use shr_infnan_mod                     , only : nan => shr_infnan_nan, assignment(=)
@@ -70,8 +71,6 @@ module SoilBiogeochemCarbonFluxType
      real(r8), pointer :: somhr_col                                 (:)     ! (gC/m2/s) soil organic matter heterotrophic res: donor-pool based definition
      real(r8), pointer :: soilc_change_col                          (:)     ! (gC/m2/s) FUN used soil C
      real(r8), pointer :: fates_litter_flux                         (:)     ! (gC/m2/s) A summary of the total litter
-     real(r8), pointer :: fates_unreleased_cfluxes_col              (:)     ! (gC/m2) holding variable to add the amount of carbon that -will- be released over the next day as the result of fates dynamics. Includes fire, grazing and litter fluxes. 
-     
                                                                             ! flux passed in from FATES.
                                                                             ! This is a diagnostic for balance checks only
      ! track tradiagonal matrix  
@@ -204,7 +203,6 @@ contains
 
      if(use_fates)then
         allocate(this%fates_litter_flux(begc:endc)); this%fates_litter_flux(:) = nan
-        allocate(this%fates_unreleased_cfluxes_col(begc:endc)); this%fates_unreleased_cfluxes_col(:) = nan
      else
         allocate(this%fates_litter_flux(0:0)); this%fates_litter_flux(:) = nan
      end if
@@ -761,10 +759,6 @@ contains
          long_name='', units='', &
          interpinic_flag='interp', readvar=readvar, data=this%litr_lig_c_to_n_col)
 
-    call restartvar(ncid=ncid, flag=flag, varname='fates_unreleased_cfluxes', xtype=ncd_double,  &
-         dim1name='column', &
-         long_name='', units='gC/m2', &
-         interpinic_flag='interp', readvar=readvar, data=this%fates_unreleased_cfluxes_col)
 
     
   end subroutine Restart
@@ -847,12 +841,11 @@ contains
     do fi = 1,num_column
        i = filter_column(fi)
        if(use_fates_bgc)then
-          this%fates_npp_col(i)           = value_column
-          this%fates_nee_col(i)           = value_column
-          this%fates_nep_col(i)           = value_column
-          this%fates_nbp_col(i)           = value_column
-          this%fates_fire_grazing_col(i)  = value_column
-          this%fates_unreleased_cfluxes(i)= value_column
+          this%fates_npp_col(i)               = value_column
+          this%fates_nee_col(i)               = value_column
+          this%fates_nep_col(i)               = value_column
+          this%fates_nbp_col(i)               = value_column
+          this%fates_fire_grazing_col(i)      = value_column
        endif
        this%hr_col(i)            = value_column
        this%somc_fire_col(i)     = value_column  
@@ -1092,11 +1085,7 @@ contains
          ! These are all gc/,2/s and instantaneous.                                                       
          this%fates_nep_col(c) = this%fates_npp_col(c) - this%hr_col(c)
          this%fates_nbp_col(c) = this%fates_nep_col(c) - this%fates_fire_grazing_col(c) !- product_loss(c)
-         ! Each model timestep we remove the fluxes of fire/litter/grazing that happened in this timestep from the unreleased fluxes holding balloon. 
-         this%fates_unreleased_cfluxes(c) = thus%fates_unreleased_cfluxes(c) - this%fates_fire_grazing_col(c)
-         
-         write(*,*) 'unrelf update',c,this%fates_unreleased_cfluxes(c),this%fates_fire_grazing_col(c)
-         write(*,*) 'need litter pools too' 
+
          ! need to take off product pools
          
        end if
