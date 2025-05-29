@@ -762,11 +762,12 @@ contains
          interpinic_flag='interp', readvar=readvar, data=this%litr_lig_c_to_n_col)
 
     if(use_fates_bgc)then
-       call restartvar(ncid=ncid, flag=flag, varname='fates_unreleased_cfluxes', xtype=ncd_double,  &
+    call restartvar(ncid=ncid, flag=flag, varname='fates_unreleased_cfluxes', xtype=ncd_double,  &
          dim1name='column', &
-         long_name='C fluxes that FATES has generated but not yet released to the atmosphere', unit s='gC/m2', &
+         long_name='C fluxes that FATES has generated but not yet released to the atmosphere', units='gC/m2', &
          interpinic_flag='interp', readvar=readvar, data=this%fates_unreleased_cfluxes_col)
-    end if
+ endif
+ 
 
     
   end subroutine Restart
