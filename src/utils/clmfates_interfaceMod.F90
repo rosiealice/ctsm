@@ -1,4 +1,3 @@
-
 module CLMFatesInterfaceMod
 
    ! -------------------------------------------------------------------------------------
@@ -1172,7 +1171,8 @@ module CLMFatesInterfaceMod
       ! and it keeps all the boundaries in one location
       ! ---------------------------------------------------------------------------------
 
-
+      write(*,*) 'going into FATES dynamics'
+      
       call t_startf('fates_dynamics_daily_driver')
 
       begg = bounds_clump%begg; endg = bounds_clump%endg
@@ -1393,7 +1393,7 @@ module CLMFatesInterfaceMod
                                           this%fates(nc)%bc_in )
 
       call t_stopf('fates_dynamics_daily_driver')
-
+ write(*,*) 'leaving into FATES dynamics'
       return
    end subroutine dynamics_driv
 
@@ -1490,6 +1490,7 @@ module CLMFatesInterfaceMod
 
      associate(cf_soil => soilbiogeochem_carbonflux_inst)
 
+
        ! This is zeroed in CNDriverNoLeaching -> soilbiogeochem_carbonflux_inst%SetValues()
        ! Which is called prior to this call, which is later in the CNDriverNoLeaching()
        ! routine.
@@ -1507,10 +1508,10 @@ module CLMFatesInterfaceMod
                cf_soil%decomp_cpools_sourcesink_col(c,1:nlevdecomp,i_met_lit) + &
                this%fates(ci)%bc_out(s)%litt_flux_lab_c_si(1:nlevdecomp)*dtime
 
-          ! Used for mass balance checking (gC/m2/s)
+          ! Used (only) for column soil level  mass balance checking (gC/m2/s)
           cf_soil%fates_litter_flux(c) = sum(this%fates(ci)%bc_out(s)%litt_flux_lab_c_si(1:nlevdecomp) * &
                                              this%fates(ci)%bc_in(s)%dz_decomp_sisl(1:nlevdecomp))
-          
+
           i_cel_lit = i_met_lit + 1
           
           cf_soil%decomp_cpools_sourcesink_col(c,1:nlevdecomp,i_cel_lit) = &
@@ -1536,7 +1537,14 @@ module CLMFatesInterfaceMod
           cf_soil%fates_litter_flux(c) = cf_soil%fates_litter_flux(c) + &
                sum(this%fates(ci)%bc_out(s)%litt_flux_lig_c_si(1:nlevdecomp) * &
                    this%fates(ci)%bc_in(s)%dz_decomp_sisl(1:nlevdecomp))
+
+          ! remove this timestep's carbon from the unreleased pool.
+          ! these need scaling up to a whole day from gC/m2/ts/ 
+          cf_soil%fates_unreleased_cfluxes_col(ci)= cf_soil%fates_unreleased_cfluxes_col(ci) &
+               - cf_soil%fates_litter_flux(c) * dtime  
           
+          write(*,*) 'fates litter gC/,2/ts',c, cf_soil%fates_litter_flux(c)*dtime
+          write(*,*) 'reduce unrel pool, unrel, litfl',c,cf_soil%fates_unreleased_cfluxes_col(ci), cf_soil%fates_litter_flux(c) * dtime 
        else
           ! In SP mode their is no mass flux between the two 
           
@@ -1554,6 +1562,7 @@ module CLMFatesInterfaceMod
         waterdiagnosticbulk_inst, canopystate_inst, &
         soilbiogeochem_carbonflux_inst, is_initing_from_restart)
 
+      use FatesConstantsMod        , only : sec_per_day
       ! ---------------------------------------------------------------------------------
       ! This routine handles the updating of vegetation canopy diagnostics, (such as lai)
       ! that either requires HLM boundary conditions (like snow accumulation) or
@@ -1567,7 +1576,6 @@ module CLMFatesInterfaceMod
      type(canopystate_type)  , intent(inout)        :: canopystate_inst
      type(soilbiogeochem_carbonflux_type), intent(inout) :: soilbiogeochem_carbonflux_inst
                    
-
      ! is this being called during a read from restart sequence (if so then use the restarted fates
      ! snow depth variable rather than the CLM variable).
      logical                 , intent(in)           :: is_initing_from_restart
@@ -1596,8 +1604,8 @@ module CLMFatesInterfaceMod
          voc_pftindex => canopystate_inst%voc_pftindex_patch, &
          snow_depth => waterdiagnosticbulk_inst%snow_depth_col, &
          frac_sno_eff => waterdiagnosticbulk_inst%frac_sno_eff_col, &
-         frac_veg_nosno_alb => canopystate_inst%frac_veg_nosno_alb_patch)
-
+         frac_veg_nosno_alb => canopystate_inst%frac_veg_nosno_alb_patch ,&
+         unreleased_cfluxes => soilbiogeochem_carbonflux_inst%fates_unreleased_cfluxes_col)
 
        ! Process input boundary conditions to FATES
        ! --------------------------------------------------------------------------------
@@ -1686,15 +1694,41 @@ module CLMFatesInterfaceMod
           if (IsItDispersalTime()) dispersal_flag = .true.
        end if
 
+      ! Add all of today's carbon fluxes to the daily flux pool. 
       do s = 1,this%fates(nc)%nsites
+          c = this%f2hmap(nc)%fcolumn(s)
+          g = col%gridcell(c)
+          ! Add all the fluxes that happened today in FATES on to the
+          ! unreleased fluxes balloon
+          ! At this point the unreleased fluxes -should- be zero
+          unreleased_cfluxes(c)=unreleased_cfluxes(c)+ &
+               (sum(this%fates(nc)%bc_out(s)%litt_flux_lab_c_si(1:nlevdecomp) +&
+                sum(this%fates(nc)%bc_out(s)%litt_flux_cel_c_si(1:nlevdecomp)  +&
+                sum(this%fates(nc)%bc_out(s)%litt_flux_lig_c_si(1:nlevdecomp)) *
+               this%fates(nc)%bc_in(s)%dz_decomp_sisl(1:nlevdecomp) &
+                    *  sec_per_day
+               
+          ! Add growth respiration, which happens at midnight, onto the unreleased fluzes
+          unreleased_cfluxes(c)=unreleased_cfluxes(c)+
+               
+          write(*,*) 'adding fluxes to unrelc',unreleased_cfluxes(c),&
+          sum(this%fates(nc)%bc_out(s)%litt_flux_lab_c_si(1:nlevdecomp) * &
+               this%fates(nc)%bc_in(s)%dz_decomp_sisl(1:nlevdecomp)) &
+               *  sec_per_day
+          
+          ! I need to add fire and grazing here. 
+     enddo 
+     do s = 1,this%fates(nc)%nsites
 
           c = this%f2hmap(nc)%fcolumn(s)
           g = col%gridcell(c)
 
-          ! Accumulate seeds from sites to the gridcell local outgoing buffer
+          ! Accumulate seeds from sites to the gridcell local outgoing buffer                          
           if (fates_seeddisp_cadence /= fates_dispersal_cadence_none) then
              if (dispersal_flag) this%fates_seed%outgoing_local(:,g) = this%fates(nc)%sites(s)%seed_out(:)
           end if
+
+          
 
           ! Other modules may have AI's we only flush values
           ! that are on the naturally vegetated columns
@@ -2116,7 +2150,7 @@ module CLMFatesInterfaceMod
                ! ------------------------------------------------------------------------
                call this%wrap_update_hlmfates_dyn(nc,bounds_clump, &
                      waterdiagnosticbulk_inst,canopystate_inst, &
-                     soilbiogeochem_carbonflux_inst, .true.)
+                     soilbiogeochem_carbonflux_inst,.true.)
 
                ! ------------------------------------------------------------------------
                ! Update the 3D patch level radiation absorption fractions
@@ -2316,7 +2350,8 @@ module CLMFatesInterfaceMod
            ! ------------------------------------------------------------------------
            call this%wrap_update_hlmfates_dyn(nc,bounds_clump, &
                 waterdiagnosticbulk_inst,canopystate_inst, &
-                soilbiogeochem_carbonflux_inst, .false.)
+                soilbiogeochem_carbonflux_inst, &
+                .false.)
 
            ! ------------------------------------------------------------------------
            ! Flush and zero FATES history variables.
@@ -2947,7 +2982,8 @@ module CLMFatesInterfaceMod
         fates_npp     => soilbiogeochem_carbonflux_inst%fates_npp_col    , &
         fire_grazing     => soilbiogeochem_carbonflux_inst%fates_fire_grazing_col    , &    
         product_closs => soilbiogeochem_carbonflux_inst%fates_product_loss_grc ,  &
-        fates_total_carbon => soilbiogeochem_carbonstate_inst%fates_total_carbon_col) 
+        fates_total_carbon => soilbiogeochem_carbonstate_inst%fates_total_carbon_col , &
+        fates_unreleased_carbon => soilbiogeochem_carbonflux_inst%fates_unreleased_cfluxes_col)
 
     nc = bounds_clump%clump_index
 
@@ -2969,8 +3005,14 @@ module CLMFatesInterfaceMod
        ! Add the instantaneous amount of carbon in the accumulated NPP pool, which at this
        ! model timestep has not been allocated to a FATES biomass pool
        ! (but will be at the end of the day)
+       ! gC/m2 + gC/m2/day
        fates_total_carbon(c) =  fates_total_carbon(c) + this%fates(nc)%bc_out(s)%npp_acc_site
-
+       write(*,*) 'ACF:TOTVEGC,npp_ac,FTC',c, fates_total_carbon(c) ,this%fates(nc)%bc_out(s)%fates_total_carbon_site, this%fates(nc)%bc_out(s)%npp_acc_site
+       
+       ! the total amount of carbon on the land surface includes the fluxes generated from yesterday by fates (at midnight) which are dribbled over the course of the next day. 
+       fates_total_carbon(c) = fates_total_carbon(c) + fates_unreleased_carbon(c) 
+       write(*,*) 'ACF:totC, unrel C',fates_total_carbon(c), fates_unreleased_carbon(c) 
+        
     end do
 
     call c2g( bounds = bounds_clump, &
