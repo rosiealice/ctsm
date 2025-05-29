@@ -204,6 +204,9 @@ contains
        c = filter_soilc(fc)
 
        col_begcb(c) = totcolc(c)
+       if(use_fates_bgc)then
+          col_begcb(c)= soilbiogeochem_carbonstate_inst%totsomc_col(c)
+       endif
        col_begnb(c) = totcoln(c)
 
     end do
@@ -304,23 +307,18 @@ contains
          
          
          if( col%is_fates(c) ) then
-
+            col_endcb(c) = soilbiogeochem_carbonstate_inst%totsomc_col(c) 
             s = clm_fates%f2hmap(ic)%hsites(c)
-            ! this balance check previously only had the soil as its boundary condition
-            ! but was passing the totcolc as the beg/end state varialbe.
-            ! and this contains the vegetation carbon
-
-            ! is there anything we can say at the column level if harvest is exported? 
-            ! think it might be best to bypass this check for now... 
             
-            col_cinputs = fates_litter_flux(c)+soilbiogeochem_carbonflux_inst%fates_nep_col(c)
-            ! calculate total column-level outputs
-            ! fates has already exported burn losses and fluxes to the atm
-            ! So they are irrelevant here
+            ! this balance check determines the column level balance of the soil pool 
+            ! when FATES is on. 
+            col_cinputs = fates_litter_flux(c)
+
+            ! calculate total column-level outputs from soil pool 
             ! (gC/m2/s) total heterotrophic respiration
+            ! what about leaching?
+            
             col_coutputs = soilbiogeochem_carbonflux_inst%hr_col(c)
-
-
          else
             
             ! calculate total column-level inputs
@@ -355,13 +353,14 @@ contains
             err_found = .true.
             err_index = c
          end if
-          if (abs(col_errcb(c)) > this%cwarning.and. .not.use_fates_bgc) then
-            write(iulog,*) 'cbalance warning at c =', c, col_errcb(c), col_endcb(c)
+          if (abs(col_errcb(c)) > this%cwarning) then
+             write(iulog,*) 'cbalance warning at c =', c, col_errcb(c), col_endcb(c)
+             write(iulog,*) 'flux, dstock',(col_cinputs - col_coutputs)*dt, (col_endcb(c) - col_begcb(c))
          end if
 
 !      end do ! end of columns loop
 
-      if (err_found.and. .not.use_fates_bgc) then
+      if (err_found) then
          c = err_index
          write(iulog,*)'column cbalance error    = ', col_errcb(c), c
          write(iulog,*)'is fates column?         = ', col%is_fates(c)
@@ -387,7 +386,9 @@ contains
             write(iulog,*)'hr                       = ',soilbiogeochem_carbonflux_inst%hr_col(c)*dt
          end if
          write(iulog,*)'-1*som_c_leached         = ',som_c_leached(c)*dt
-         call endrun(subgrid_index=c, subgrid_level=subgrid_level_column, msg=errMsg(sourcefile, __LINE__))
+         if(.not. use_fates_bgc)then
+            call endrun(subgrid_index=c, subgrid_level=subgrid_level_column, msg=errMsg(sourcefile, __LINE__))
+         endif
       end if
     end do ! end of columns loop                                                                      
 
@@ -399,9 +400,6 @@ contains
          garr = totgrcc(bounds%begg:bounds%endg), &
          c2l_scale_type = 'unity', &
          l2g_scale_type = 'unity')
-      write(*,*) 'totc',totcolc(bounds%begc:bounds%endc)
-      write(*,*) 'totg',totgrcc(bounds%begg:bounds%endg)
-      write(*,*) 'lats', grc%latdeg(bounds%begg:bounds%endg)
 
       call c2g( bounds = bounds, &
          carr = som_c_leached(bounds%begc:bounds%endc), &
@@ -416,7 +414,7 @@ contains
          c2l_scale_type = 'unity', &
          l2g_scale_type = 'unity')         
       end if
-write(*,*) 'nbp',soilbiogeochem_carbonflux_inst%fates_nbp_grc(bounds%begg:bounds%endg)      
+
       err_found = .false.
       do g = bounds%begg, bounds%endg
          ! calculate gridcell-level carbon storage for mass conservation check
@@ -472,18 +470,14 @@ write(*,*) 'nbp',soilbiogeochem_carbonflux_inst%fates_nbp_grc(bounds%begg:bounds
             grc_cinputs = soilbiogeochem_carbonflux_inst%fates_nbp_grc(g) !newr calc
             ! removing the hr_col here as it is 0 in the clmfates_interface, but not in the summary
             grc_coutputs = - som_c_leached_grc(g)
-            write(*,*) 'nbp int, nbp prev',nbp_grc(g)  ,soilbiogeochem_carbonflux_inst%fates_nbp_grc(bounds%begg:bounds%endg)
             grc_errcb(g) = (grc_cinputs - grc_coutputs) * dt - &
                  (grc_endcb(g) - grc_begcb(g))
-            write(*,*) 'GCELL error:',g,grc_errcb(g)
-            write(*,*) 'GCELL error:' ,grc_endcb(g) - grc_begcb(g),(grc_cinputs - grc_coutputs) * dt
          end if
          
          ! check for significant errors
          if (abs(grc_errcb(g)) > this%cerror) then
             err_found = .true.
             err_index = g
-            write(*,*) 'error found',g,  grc_errcb(g)
          end if
          if (abs(grc_errcb(g)) > this%cwarning) then
             write(iulog,*) 'cbal warning:', g, grc_errcb(g), grc_endcb(g)
