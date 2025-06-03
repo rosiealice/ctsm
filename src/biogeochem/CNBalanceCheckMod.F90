@@ -360,7 +360,7 @@ contains
 
 !      end do ! end of columns loop
 
-      if (err_found) then
+      if (err_found .and. .not. use_fates_bgc) then
          c = err_index
          write(iulog,*)'column cbalance error    = ', col_errcb(c), c
          write(iulog,*)'is fates column?         = ', col%is_fates(c)
@@ -483,7 +483,7 @@ contains
             write(iulog,*) 'cbal warning:', g, grc_errcb(g), grc_endcb(g)
          end if
 
-      if (err_found) then
+         if (err_found .and. .not. use_fates_bgc) then
          !g = err_index
          write(iulog,*)'gridcell cbalance error =', grc_errcb(g), g
          write(iulog,*)'latdeg, londeg          =', grc%latdeg(g), grc%londeg(g)
