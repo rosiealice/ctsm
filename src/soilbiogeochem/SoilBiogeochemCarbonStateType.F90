@@ -695,6 +695,10 @@ contains
           this%totc_col(c)       = 0._r8
           this%totecosysc_col(c) = 0._r8
        end if
+
+       if(if (col%is_fates(c) ) )then
+         fates_total_carbon_col(c) = 0._r8
+       endif 
        
     end do
 
@@ -1636,7 +1640,7 @@ contains
           totvegc_col = cnveg_carbonstate_inst%totc_p2c_col(c)
           ecovegc_col = cnveg_carbonstate_inst%totvegc_col(c)
        end if
-       
+       write(*,*) 'ecoveg,totveg',ecovegc_col,totvegc_col
        ! total ecosystem carbon, including veg but excluding cpool (TOTECOSYSC)
        this%totecosysc_col(c) =   &
             this%cwdc_col(c)    + &
