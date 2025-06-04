@@ -1,5 +1,5 @@
 module SoilBiogeochemCarbonStateType
-
+  
   use shr_kind_mod                       , only : r8 => shr_kind_r8
   use shr_infnan_mod                     , only : nan => shr_infnan_nan, assignment(=)
   use shr_log_mod                        , only : errMsg => shr_log_errMsg
@@ -178,7 +178,7 @@ contains
     allocate(this%totecosysc_col           (begc:endc)) ; this%totecosysc_col           (:) = nan
     allocate(this%totc_grc                 (begg:endg)) ; this%totc_grc                 (:) = nan
     if(use_fates_bgc)then
-      allocate(this%fates_total_carbon_col   (begg:endg)) ; this%fates_total_carbon_col   (:) = nan
+      allocate(this%fates_total_carbon_col   (begc:endc)) ; this%fates_total_carbon_col   (:) = nan
     endif
 
     this%restart_file_spinup_state = huge(1)
@@ -696,8 +696,8 @@ contains
           this%totecosysc_col(c) = 0._r8
        end if
 
-       if(if (col%is_fates(c) ) )then
-         fates_total_carbon_col(c) = 0._r8
+       if(use_fates_bgc)then
+          this%fates_total_carbon_col(c) = 0._r8
        endif 
        
     end do
@@ -1343,6 +1343,8 @@ contains
        i = filter_column(fi)
        if ( .not. col%is_fates(i) ) then
           this%cwdc_col(i)       = value_column
+       else
+          this%fates_total_carbon_col(i) = value_column
        end if
        this%ctrunc_col(i)     = value_column
        this%totmicc_col(i)    = value_column
@@ -1622,6 +1624,7 @@ contains
     else
        num_local = num_allc
     end if
+    
     do fc = 1,num_local
        if(use_fates_bgc) then
           c = filter_bgc_soilc(fc)
@@ -1632,6 +1635,10 @@ contains
           totvegc_col = this%fates_total_carbon_col(c) 
           ecovegc_col = this%fates_total_carbon_col(c)
        else
+          if(use_fates_bgc)then
+             totvegc_col = 0._r8
+             ecovegc_col = 0._r8
+          endif
           do l = 1, ndecomp_pools
              if ( decomp_cascade_con%is_cwd(l) ) then
                 this%cwdc_col(c) = this%cwdc_col(c) + this%decomp_cpools_col(c,l)
@@ -1640,7 +1647,6 @@ contains
           totvegc_col = cnveg_carbonstate_inst%totc_p2c_col(c)
           ecovegc_col = cnveg_carbonstate_inst%totvegc_col(c)
        end if
-       write(*,*) 'ecoveg,totveg',ecovegc_col,totvegc_col
        ! total ecosystem carbon, including veg but excluding cpool (TOTECOSYSC)
        this%totecosysc_col(c) =   &
             this%cwdc_col(c)    + &
