@@ -463,13 +463,10 @@ contains
             ! Total land carbon is informed by FATES carbon. 
             grc_endcb(g) = totgrcc(g) + tot_woodprod_grc(g) + cropprod1_grc(g)
             
+            grc_cinputs = soilbiogeochem_carbonflux_inst%fates_nbp_grc(g)
 
-            nbp_grc(g)  = soilbiogeochem_carbonflux_inst%fates_nbp_grc(g)-soilbiogeochem_carbonflux_inst%hr_col(c)
-            
-            grc_cinputs = nbp_grc(g)
-            grc_cinputs = soilbiogeochem_carbonflux_inst%fates_nbp_grc(g) !newr calc
-            ! removing the hr_col here as it is 0 in the clmfates_interface, but not in the summary
             grc_coutputs = - som_c_leached_grc(g)
+
             grc_errcb(g) = (grc_cinputs - grc_coutputs) * dt - &
                  (grc_endcb(g) - grc_begcb(g))
          end if
