@@ -2969,15 +2969,8 @@ module CLMFatesInterfaceMod
        ! Add the instantaneous amount of carbon in the accumulated NPP pool, which at this
        ! model timestep has not been allocated to a FATES biomass pool
        ! (but will be at the end of the day)
-       fates_total_carbon(c) =  fates_total_carbon(c) + this%fates(nc)%bc_out(s)%npp_acc_site
 
     end do
-
-    call c2g( bounds = bounds_clump, &
-            carr = soilbiogeochem_carbonflux_inst%fates_nbp_col(bounds_clump%begc:bounds_clump%endc), &
-            garr = soilbiogeochem_carbonflux_inst%fates_nbp_grc(bounds_clump%begg:bounds_clump%endg), &
-            c2l_scale_type = 'unity', &
-            l2g_scale_type = 'unity')
 
     end associate
     return
