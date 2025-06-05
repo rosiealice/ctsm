@@ -283,10 +283,6 @@ contains
              avgflag='A', long_name='FATES net ecosystem productivity', &
              ptr_col=this%fates_nee_col)
 
-        call hist_addfld1d (fname='FATES_NEP', units='gC/m^2/s', &
-             avgflag='A', long_name='FATES net ecosystem productivity', &
-             ptr_col=this%fates_nep_col)
-
         call hist_addfld1d (fname='FATES_NBP', units='gC/m^2/s', &
              avgflag='A', long_name='FATES net biome productivity', &
              ptr_col=this%fates_nbp_col)
