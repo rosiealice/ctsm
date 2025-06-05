@@ -353,7 +353,7 @@ contains
             err_found = .true.
             err_index = c
          end if
-          if (abs(col_errcb(c)) > this%cwarning) then
+          if (abs(col_errcb(c)) > this%cwarning .and. .not. use_fates_bgc) then
              write(iulog,*) 'cbalance warning at c =', c, col_errcb(c), col_endcb(c)
              write(iulog,*) 'flux, dstock',(col_cinputs - col_coutputs)*dt, (col_endcb(c) - col_begcb(c))
          end if
@@ -476,7 +476,7 @@ contains
             err_found = .true.
             err_index = g
          end if
-         if (abs(grc_errcb(g)) > this%cwarning) then
+         if (abs(grc_errcb(g)) > this%cwarning .and. .not. use_fates_bgc ) then
             write(iulog,*) 'cbal warning:', g, grc_errcb(g), grc_endcb(g)
          end if
 
@@ -675,7 +675,7 @@ contains
             err_index = c
          end if
          
-         if (abs(col_errnb(c)) > this%nwarning) then
+         if (abs(col_errnb(c)) > this%nwarning ) then
             write(iulog,*) 'nbalance warning at c =', c, col_errnb(c), col_endnb(c)
             write(iulog,*)'inputs,ffix,nfix,ndep = ',ffix_to_sminn(c)*dt,nfix_to_sminn(c)*dt,ndep_to_sminn(c)*dt
             write(iulog,*)'outputs,lch,roff,dnit = ',smin_no3_leached(c)*dt, smin_no3_runoff(c)*dt,f_n2o_nit(c)*dt
