@@ -285,8 +285,9 @@ contains
 
         call hist_addfld1d (fname='FATES_NBP', units='gC/m^2/s', &
              avgflag='A', long_name='FATES net biome productivity', &
-             ptr_col=this%fates_nbp_col)
-
+             ptr_gcell=this%fates_nbp_grc)
+        ! this is writing the COLUMN level NBP, but we want to write out the gridcell fluxes. 
+        
         call hist_addfld1d (fname='FATES_FIRE_GRAZING', units='gC/m^2/s', &
              avgflag='A', long_name='FATES fire and grazing fluxes (NBP-NEP) ', &
              ptr_col=this%fates_fire_grazing_col)
@@ -864,7 +865,7 @@ contains
     ! On the radiation time step, carbon summary calculations
     !
     ! !USES:
-    use subgridAveMod, only: p2c
+    use subgridAveMod, only: p2c , c2g
     use CNSharedParamsMod, only: CNParamsShareInst
 
     ! !ARGUMENTS:
@@ -883,7 +884,7 @@ contains
     real(r8), intent(in), optional :: frootc_to_litter_patch(:)
     !
     ! !LOCAL VARIABLES:
-    integer  :: c,j,k,l,p
+    integer  :: c,j,k,l,p,g
     integer  :: fc, fp
     real(r8) :: ligninNratio_cwd  ! lignin to N ratio of CWD
     real(r8) :: ligninNratio_leaf_patch(bounds%begp:bounds%endp)  ! lignin to N ratio of leaves, patch level
@@ -1077,12 +1078,25 @@ contains
        if(col%is_fates(c)) then
          ! These are all gc/,2/s and instantaneous.                                                       
          this%fates_nep_col(c) = this%fates_npp_col(c) - this%hr_col(c)
-         this%fates_nbp_col(c) = this%fates_nep_col(c) - this%fates_fire_grazing_col(c) !- product_loss(c)
-         ! need to take off product pools
+         this%fates_nbp_col(c) = this%fates_nep_col(c) - this%fates_fire_grazing_col(c)
+         ! do not add product loss here as it is a gridcell variable
+
        end if
     end do
 
+    ! create the gridcell level NBP variable
+    call c2g( bounds = bounds, &
+            carr = this%fates_nbp_col(bounds%begc:bounds%endc), &
+            garr = this%fates_nbp_grc(bounds%begg:bounds%endg), &
+            c2l_scale_type = 'unity', &
+            l2g_scale_type = 'unity')
 
+    ! remove the gridcell level product_loss flux are the gridcell level.
+    ! this is a FATES variable that is passed into this module after the product pool summary. 
+    do g = bounds%begg,bounds%endg
+       this%fates_nbp_grc(g) = this%fates_nbp_grc(g) - this%fates_product_loss_grc(g) 
+    enddo 
+       
   end subroutine Summary
 
 end module SoilBiogeochemCarbonFluxType
