@@ -1,0 +1,11 @@
+
+compset=`./xmlquery COMPSET --value` 
+echo "fates_history_dimlevel = 1,2" >> user_nl_clm 
+if [[ $compset =~ .*CLM[0-9]+%[^_]*FATES-SP.* ]]; then 
+else 
+    echo "hist_empty_htapes = .true. " >> user_nl_clm
+    echo " hist_fincl1 = 'FATES_NOCOMP_PATCHAREA_PF', "TOTEXICE_VOL", "TOTSOILICE", "TOTSOILLIQ",'ALT','ALTMAX','TSL','FATES_FRACTION','TSA','RAIN','SNOW','EFLX_LH_TOT','FSH','QSOIL','TLAI','FCO2','TOTSOMC','TOTSOMC_1m','FATES_VEGC','FATES_GPP','FATES_NEP',"TOT_WOODPRODC_LOSS", "FATES_SEEDS_IN_EXTERN_EL", "TOTLITC", "SOM_C_LEACHED", "FATES_SEED_BANK",'FATES_NPP','TWS','H2OSNO','FSNO','TOT_WOODPRODC','PROD100C','PROD10C','FATES_LITTER_AG_CWD_EL','FATES_LITTER_AG_FINE_EL','FATES_LITTER_BG_CWD_EL','FATES_LITTER_BG_FINE_EL','FATES_GRAZING','FATES_FIRE_CLOSS','FATES_BURNFRAC', 'SOM_C_LEACHED', 'FATES_SEED_BANK'" >> user_nl_clm
+   echo "hist_mfilt=1 " >> user_nl_clm
+   echo "hist_nhtfrq=0  " >> user_nl_clm 
+fi 
+
