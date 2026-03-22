@@ -4055,7 +4055,7 @@ module CLMFatesInterfaceMod
    ! Order must match FATES land-use indices in FatesConstantsMod:
    ! primaryland=1, secondaryland=2, rangeland=3, pastureland=4.
    character(len=10), parameter  :: landuse_pft_map_varnames(num_landuse_pft_vars) = &
-                    [character(len=10)  :: 'frac_primr','frac_secnd','frac_pasture','frac_range'] !need to move 'frac_surf' to a different variable
+                    [character(len=10)  :: 'frac_primr','frac_secnd','frac_range','frac_pastr'] !need to move 'frac_surf' to a different variable
 
    character(len=*), parameter :: subname = 'GetLandusePFTData'
 
