@@ -2567,6 +2567,7 @@ contains
        call ncd_defdim(lnfid, 'fates_levpft', numpft_fates, dimid)
        call ncd_defdim(lnfid, 'fates_levage', nlevage, dimid)
        call ncd_defdim(lnfid, 'fates_levheight', nlevheight, dimid)
+         call ncd_defdim(lnfid, 'fates_levemis', num_emission_compounds, dimid)
        call ncd_defdim(lnfid, 'fates_levfuel', num_fuel_classes, dimid)
        call ncd_defdim(lnfid, 'fates_levcwdsc', ncwd, dimid)
        call ncd_defdim(lnfid, 'fates_levscpf', nlevsclass*numpft_fates, dimid)
@@ -3117,7 +3118,8 @@ contains
     use FatesInterfaceTypesMod, only : fates_hdim_pftmap_levscagpft
     use FatesInterfaceTypesMod, only : fates_hdim_agmap_levagepft
     use FatesInterfaceTypesMod, only : fates_hdim_pftmap_levagepft
-    use FatesInterfaceTypesMod, only : fates_hdim_levfuel
+    use FatesInterfaceTypesMod, only : fates_hdim_levemis
+      use FatesInterfaceTypesMod, only : fates_hdim_levfuel
     use FatesInterfaceTypesMod, only : fates_hdim_levdamage
     use FatesInterfaceTypesMod, only : fates_hdim_levcwdsc
     use FatesInterfaceTypesMod, only : fates_hdim_levcan
@@ -3264,6 +3266,8 @@ contains
                   long_name='FATES height (m)', ncid=nfid(t,f))
              call ncd_defvar(varname='fates_levpft',xtype=ncd_int, dim1name='fates_levpft', &
                   long_name='FATES pft number', ncid=nfid(t,f))
+               call ncd_defvar(varname='fates_levemis',xtype=ncd_int, dim1name='fates_levemis', &
+                    long_name='FATES emissions index', ncid=nfid(t,f))
              call ncd_defvar(varname='fates_levfuel',xtype=ncd_int, dim1name='fates_levfuel', &
                   long_name='FATES fuel index', ncid=nfid(t,f))
              call ncd_defvar(varname='fates_levcwdsc',xtype=ncd_int, dim1name='fates_levcwdsc', &
@@ -3375,6 +3379,7 @@ contains
              call ncd_io(varname='fates_levage',data=fates_hdim_levage, ncid=nfid(t,f), flag='write')
              call ncd_io(varname='fates_levheight',data=fates_hdim_levheight, ncid=nfid(t,f), flag='write')
              call ncd_io(varname='fates_levpft',data=fates_hdim_levpft, ncid=nfid(t,f), flag='write')
+               call ncd_io(varname='fates_levemis',data=fates_hdim_levemis, ncid=nfid(t,f), flag='write')
              call ncd_io(varname='fates_levfuel',data=fates_hdim_levfuel, ncid=nfid(t,f), flag='write')
              call ncd_io(varname='fates_levcdam',data=fates_hdim_levdamage, ncid=nfid(t,f), flag='write')
              call ncd_io(varname='fates_levcwdsc',data=fates_hdim_levcwdsc, ncid=nfid(t,f), flag='write')
