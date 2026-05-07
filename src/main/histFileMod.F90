@@ -3119,6 +3119,7 @@ contains
     use FatesInterfaceTypesMod, only : fates_hdim_agmap_levagepft
     use FatesInterfaceTypesMod, only : fates_hdim_pftmap_levagepft
     use FatesInterfaceTypesMod, only : fates_hdim_levemis
+    use FatesInterfaceTypesMod, only : fates_fire_emission_compound_name
     use FatesInterfaceTypesMod, only : fates_hdim_levfuel
     use FatesInterfaceTypesMod, only : fates_hdim_levdamage
     use FatesInterfaceTypesMod, only : fates_hdim_levcwdsc
@@ -3268,6 +3269,10 @@ contains
                   long_name='FATES pft number', ncid=nfid(t,f))
              call ncd_defvar(varname='fates_levemis',xtype=ncd_int, dim1name='fates_levemis', &
                   long_name='FATES emissions index', ncid=nfid(t,f))
+             do i = 1, size(fates_fire_emission_compound_name)
+                write(varname,'("fates_levemis_label_",I2.2)') i
+                call ncd_putatt(nfid(t,f), ncd_global, trim(varname), trim(fates_fire_emission_compound_name(i)))
+             end do
              call ncd_defvar(varname='fates_levfuel',xtype=ncd_int, dim1name='fates_levfuel', &
                   long_name='FATES fuel index', ncid=nfid(t,f))
              call ncd_defvar(varname='fates_levcwdsc',xtype=ncd_int, dim1name='fates_levcwdsc', &
