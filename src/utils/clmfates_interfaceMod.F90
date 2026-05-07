@@ -3852,7 +3852,7 @@ module CLMFatesInterfaceMod
    use FatesInterfaceTypesMod, only : nlevdamage
    use FatesFuelClassesMod,    only : num_fuel_classes
    use FatesLitterMod,         only : ncwd
-   use EDParamsMod,            only : nlevleaf, nclmax
+   use EDParamsMod,            only : nlevleaf, nclmax, num_emission_compounds
    use FatesInterfaceTypesMod, only : numpft_fates => numpft
    use FatesConstantsMod, only : n_landuse_cats
 
@@ -3900,6 +3900,9 @@ module CLMFatesInterfaceMod
 
    fates%sizeagepft_class_begin = 1
    fates%sizeagepft_class_end   = nlevsclass * nlevage * numpft_fates
+
+   fates%emis_class_begin = 1
+   fates%emis_class_end = num_emission_compounds
 
    fates%fuel_begin = 1
    fates%fuel_end = num_fuel_classes
