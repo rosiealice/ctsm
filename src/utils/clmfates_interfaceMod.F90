@@ -3578,7 +3578,6 @@ module CLMFatesInterfaceMod
 
         dk_index = fates_hist%hvars(ivar)%dim_kinds_index
         ioname = trim(fates_hist%dim_kinds(dk_index)%name)
-
         select case(trim(ioname))
         case(site_r8)
            call hist_addfld1d(fname=trim(vname),units=trim(vunits),         &

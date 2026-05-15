@@ -175,9 +175,10 @@ contains
    integer :: dimension_sizes(max_dimensions)
    character(len=param_string_length) :: dimension_names(max_dimensions)
    integer :: size_dim_1, size_dim_2
-   integer :: iemis
+   integer :: iemis, jemis
    logical :: is_host_param
    logical :: readv
+    logical :: use_default_emis_names
    character(len=param_string_length), parameter :: default_emis_names(num_emission_compounds) = [ &
         character(len=param_string_length) :: 'CO2', 'CO', 'CH4', 'NHMC', 'H2', 'NOX', 'N2O', &
         'PM25', 'TPM', 'TC', 'OC', 'BC', 'SO2' ]
@@ -195,10 +196,27 @@ contains
       call ncd_io('fates_fire_emission_compound_name', fates_hdim_levemis_name, 'read', ncid, &
            readvar=readv, posNOTonfile=.true.)
       do iemis = 1, num_emission_compounds
-         if (len_trim(fates_hdim_levemis_name(iemis)) == 0) then
-            fates_hdim_levemis_name(iemis) = default_emis_names(iemis)
-         end if
-      end do
+          if (len_trim(fates_hdim_levemis_name(iemis)) == 0) then
+             fates_hdim_levemis_name(iemis) = default_emis_names(iemis)
+          end if
+       end do
+
+       use_default_emis_names = .false.
+       do iemis = 1, num_emission_compounds
+          do jemis = iemis + 1, num_emission_compounds
+             if (trim(adjustl(fates_hdim_levemis_name(iemis))) == &
+                  trim(adjustl(fates_hdim_levemis_name(jemis)))) then
+                use_default_emis_names = .true.
+             end if
+          end do
+       end do
+
+       if (use_default_emis_names) then
+          if (masterproc) then
+             write(fates_log(),*) 'warning: duplicate fire emission compound names read from parameter file; using default names'
+          end if
+          fates_hdim_levemis_name(:) = default_emis_names(:)
+       end if
    end if
 
    call SetParameterDimensions(ncid, is_host_file, fates_params)
