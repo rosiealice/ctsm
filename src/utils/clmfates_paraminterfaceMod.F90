@@ -178,6 +178,9 @@ contains
    integer :: iemis
    logical :: is_host_param
    logical :: readv
+   character(len=param_string_length), parameter :: default_emis_names(num_emission_compounds) = [ &
+        character(len=param_string_length) :: 'CO2', 'CO', 'CH4', 'NHMC', 'H2', 'NOX', 'N2O', &
+        'PM25', 'TPM', 'TC', 'OC', 'BC', 'SO2' ]
 
    call getfil (filename, locfn, 0)
    call ncd_pio_openfile (ncid, trim(locfn), 0)
@@ -191,6 +194,11 @@ contains
       end do
       call ncd_io('fates_fire_emission_compound_name', fates_hdim_levemis_name, 'read', ncid, &
            readvar=readv, posNOTonfile=.true.)
+      do iemis = 1, num_emission_compounds
+         if (len_trim(fates_hdim_levemis_name(iemis)) == 0) then
+            fates_hdim_levemis_name(iemis) = default_emis_names(iemis)
+         end if
+      end do
    end if
 
    call SetParameterDimensions(ncid, is_host_file, fates_params)
