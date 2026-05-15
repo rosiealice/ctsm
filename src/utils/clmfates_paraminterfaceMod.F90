@@ -7,6 +7,8 @@ module CLMFatesParamInterfaceMod
   use FatesParametersInterface, only : fates_parameters_type
   use FatesParametersInterface, only : fates_param_reader_type
   use EDParamsMod,              only : FatesRegisterParams, FatesReceiveParams
+  use EDParamsMod,              only : num_emission_compounds
+  use FatesInterfaceTypesMod,   only : fates_hdim_levemis_name
   use SFParamsMod,              only : SpitFireRegisterParams, SpitFireReceiveParams
   use PRTInitParamsFATESMod,    only : PRTRegisterParams, PRTReceiveParams
   use FatesSynchronizedParamsMod, only : FatesSynchronizedParamsInst
@@ -148,7 +150,7 @@ contains
 
    use abortutils   , only : endrun
    use fileutils    , only : getfil
-   use ncdio_pio    , only : file_desc_t , ncd_pio_closefile , ncd_pio_openfile
+   use ncdio_pio    , only : file_desc_t , ncd_pio_closefile , ncd_pio_openfile, ncd_io
    use paramUtilMod , only : readNcdio
    use spmdMod      , only : masterproc
 
@@ -173,10 +175,23 @@ contains
    integer :: dimension_sizes(max_dimensions)
    character(len=param_string_length) :: dimension_names(max_dimensions)
    integer :: size_dim_1, size_dim_2
+   integer :: iemis
    logical :: is_host_param
+   logical :: readv
 
    call getfil (filename, locfn, 0)
    call ncd_pio_openfile (ncid, trim(locfn), 0)
+
+   if (.not. is_host_file) then
+      if (.not. allocated(fates_hdim_levemis_name)) then
+         allocate(fates_hdim_levemis_name(num_emission_compounds))
+      end if
+      do iemis = 1, num_emission_compounds
+         write(fates_hdim_levemis_name(iemis), '(a,i0)') 'emis_', iemis
+      end do
+      call ncd_io('fates_fire_emission_compound_name', fates_hdim_levemis_name, 'read', ncid, &
+           readvar=readv, posNOTonfile=.true.)
+   end if
 
    call SetParameterDimensions(ncid, is_host_file, fates_params)
    max_dim_size = fates_params%GetMaxDimensionSize()

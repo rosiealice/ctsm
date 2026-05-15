@@ -2399,6 +2399,7 @@ contains
     use clm_varctl      , only : use_hillslope,nhillslope,max_columns_hillslope
     use domainMod       , only : ldomain
     use fileutils       , only : get_filename
+      use FatesParametersInterface, only : param_string_length
     !
     ! !ARGUMENTS:
     integer, intent(in) :: t                   ! tape index
@@ -2559,6 +2560,7 @@ contains
     call ncd_defdim( lnfid, 'levdcmp', nlevdecomp_full, dimid)
 
     if(use_fates)then
+         call ncd_defdim(lnfid, 'fates_string_length', param_string_length, dimid)
        call ncd_defdim(lnfid, 'fates_levscag', nlevsclass * nlevage, dimid)
        call ncd_defdim(lnfid, 'fates_levscagpf', nlevsclass * nlevage * numpft_fates, dimid)
        call ncd_defdim(lnfid, 'fates_levagepft', nlevage * numpft_fates, dimid)
@@ -3102,6 +3104,7 @@ contains
     use domainMod       , only : ldomain, lon1d, lat1d
     use clm_time_manager, only : get_nstep, get_curr_date, get_curr_time
     use clm_time_manager, only : get_ref_date, get_calendar, NO_LEAP_C, GREGORIAN_C
+    use FatesParametersInterface, only : param_string_length
     use FatesInterfaceTypesMod, only : fates_hdim_levsclass
     use FatesInterfaceTypesMod, only : fates_hdim_pfmap_levscpf
     use FatesInterfaceTypesMod, only : fates_hdim_scmap_levscpf
@@ -3119,6 +3122,7 @@ contains
     use FatesInterfaceTypesMod, only : fates_hdim_agmap_levagepft
     use FatesInterfaceTypesMod, only : fates_hdim_pftmap_levagepft
     use FatesInterfaceTypesMod, only : fates_hdim_levemis
+    use FatesInterfaceTypesMod, only : fates_hdim_levemis_name
     use FatesInterfaceTypesMod, only : fates_hdim_levfuel
     use FatesInterfaceTypesMod, only : fates_hdim_levdamage
     use FatesInterfaceTypesMod, only : fates_hdim_levcwdsc
@@ -3268,6 +3272,8 @@ contains
                   long_name='FATES pft number', ncid=nfid(t,f))
              call ncd_defvar(varname='fates_levemis',xtype=ncd_int, dim1name='fates_levemis', &
                   long_name='FATES emissions index', ncid=nfid(t,f))
+             call ncd_defvar(varname='fates_levemis_name',xtype=ncd_char, dim1name='fates_string_length', dim2name='fates_levemis', &
+                  long_name='FATES emissions compound name', ncid=nfid(t,f))
              call ncd_defvar(varname='fates_levfuel',xtype=ncd_int, dim1name='fates_levfuel', &
                   long_name='FATES fuel index', ncid=nfid(t,f))
              call ncd_defvar(varname='fates_levcwdsc',xtype=ncd_int, dim1name='fates_levcwdsc', &
@@ -3380,6 +3386,9 @@ contains
              call ncd_io(varname='fates_levheight',data=fates_hdim_levheight, ncid=nfid(t,f), flag='write')
              call ncd_io(varname='fates_levpft',data=fates_hdim_levpft, ncid=nfid(t,f), flag='write')
              call ncd_io(varname='fates_levemis',data=fates_hdim_levemis, ncid=nfid(t,f), flag='write')
+             if (allocated(fates_hdim_levemis_name)) then
+                call ncd_io(varname='fates_levemis_name',data=fates_hdim_levemis_name, ncid=nfid(t,f), flag='write')
+             end if
              call ncd_io(varname='fates_levfuel',data=fates_hdim_levfuel, ncid=nfid(t,f), flag='write')
              call ncd_io(varname='fates_levcdam',data=fates_hdim_levdamage, ncid=nfid(t,f), flag='write')
              call ncd_io(varname='fates_levcwdsc',data=fates_hdim_levcwdsc, ncid=nfid(t,f), flag='write')
