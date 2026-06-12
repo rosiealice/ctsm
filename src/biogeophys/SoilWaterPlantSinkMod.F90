@@ -166,7 +166,6 @@ contains
       integer :: pi
       integer :: p
       real(r8) :: temp(bounds%begc:bounds%endc)                         ! accumulator for rootr weighting
-      real(r8) :: sink_sum
 
 
       associate(& 
@@ -204,8 +203,10 @@ contains
               c = filterc(fc)
               do p = col%patchi(c), col%patchi(c) + col%npatches(c) - 1
                  if (patch%active(p)) then
-                    rootr_col(c,j) = rootr_col(c,j) + rootr_patch(p,j) * &
-                          qflx_tran_veg_patch(p) * patch%wtcol(p)
+                    if (sum(rootr_patch(p,:)) > 0._r8) then
+                       rootr_col(c,j) = rootr_col(c,j) + rootr_patch(p,j) * &
+                             qflx_tran_veg_patch(p) * patch%wtcol(p)
+                    end if
                  end if
               end do
            end do
@@ -214,7 +215,9 @@ contains
            c = filterc(fc)
            do p = col%patchi(c), col%patchi(c) + col%npatches(c) - 1
               if (patch%active(p)) then
-                 temp(c) = temp(c) + qflx_tran_veg_patch(p) * patch%wtcol(p)
+                 if (sum(rootr_patch(p,:)) > 0._r8) then
+                    temp(c) = temp(c) + qflx_tran_veg_patch(p) * patch%wtcol(p)
+                 end if
               end if
            end do
         end do
@@ -229,16 +232,6 @@ contains
            end do
         end do
 
-        ! Gentle rescale: rescale root sink if needed for water balance consistency
-        do fc = 1, num_filterc
-           c = filterc(fc)
-           sink_sum = sum(qflx_rootsoi_col(c,:))
-           if (sink_sum > 1.e-16_r8 .and. abs(sink_sum - qflx_tran_veg_col(c)) > 1.e-14_r8) then
-              do j = 1, nlevsoi
-                 qflx_rootsoi_col(c,j) = qflx_rootsoi_col(c,j) * qflx_tran_veg_col(c) / sink_sum
-              end do
-           end if
-        end do
       end associate
       return
    end subroutine Compute_EffecRootFrac_And_VertTranSink_HydStress_Roads
@@ -372,7 +365,6 @@ contains
     integer  :: p,c,fc,j                                              ! do loop indices
     integer  :: pi                                                    ! patch index
     real(r8) :: temp(bounds%begc:bounds%endc)                         ! accumulator for rootr weighting
-    real(r8) :: sink_sum
     associate(& 
           qflx_rootsoi_col    => waterfluxbulk_inst%qflx_rootsoi_col    , & ! Output: [real(r8) (:,:) ]  
                                                                         ! vegetation/soil water exchange (m H2O/s) (+ = to atm)
@@ -407,8 +399,10 @@ contains
             c = filterc(fc)
             do p = col%patchi(c), col%patchi(c) + col%npatches(c) - 1
                if (patch%active(p)) then
-                  rootr_col(c,j) = rootr_col(c,j) + rootr_patch(p,j) * &
-                        qflx_tran_veg_patch(p) * patch%wtcol(p)
+                  if (sum(rootr_patch(p,:)) > 0._r8) then
+                     rootr_col(c,j) = rootr_col(c,j) + rootr_patch(p,j) * &
+                           qflx_tran_veg_patch(p) * patch%wtcol(p)
+                  end if
                end if
             end do
          end do
@@ -417,7 +411,9 @@ contains
          c = filterc(fc)
          do p = col%patchi(c), col%patchi(c) + col%npatches(c) - 1
             if (patch%active(p)) then
-               temp(c) = temp(c) + qflx_tran_veg_patch(p) * patch%wtcol(p)
+               if (sum(rootr_patch(p,:)) > 0._r8) then
+                  temp(c) = temp(c) + qflx_tran_veg_patch(p) * patch%wtcol(p)
+               end if
             end if
          end do
       end do
@@ -433,16 +429,6 @@ contains
          end do
       end do
 
-      ! Gentle rescale: rescale root sink if needed for water balance consistency
-      do fc = 1, num_filterc
-         c = filterc(fc)
-         sink_sum = sum(qflx_rootsoi_col(c,:))
-         if (sink_sum > 1.e-16_r8 .and. abs(sink_sum - qflx_tran_veg_col(c)) > 1.e-14_r8) then
-            do j = 1, nlevsoi
-               qflx_rootsoi_col(c,j) = qflx_rootsoi_col(c,j) * qflx_tran_veg_col(c) / sink_sum
-            end do
-         end if
-      end do
     end associate
     return
  end subroutine Compute_EffecRootFrac_And_VertTranSink_Default
